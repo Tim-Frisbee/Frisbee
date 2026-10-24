@@ -1,7 +1,7 @@
 # Zet de site automatisch live op frisbee.agency bij elke wijziging in site/ op de main-branch.
 # Teksten, cases en beelden die je in het beheerpaneel aanpast, blijven op de server en worden nooit overschreven.
 #
-# Nodig (Settings → Secrets and variables → Actions):
+# Nodig (Settings → Environments → Frisbee, of Settings → Secrets and variables → Actions):
 #   Secrets:   FTP_SERVER, FTP_GEBRUIKER, FTP_WACHTWOORD
 #   Optioneel: INSTALLATIECODE  (alleen voor de eerste installatie, daarna verwijderen)
 #   Variable:  FTP_MAP  (standaard: httpdocs/)
@@ -25,6 +25,10 @@ jobs:
   uitrol:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # De FTP-gegevens staan in de GitHub-environment "Frisbee"
+    environment:
+      name: Frisbee
+      url: https://frisbee.agency
     steps:
       - name: Controleer of de FTP-gegevens ingesteld zijn
         id: check

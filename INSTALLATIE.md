@@ -23,7 +23,7 @@ Laat de map `wp/` voorlopig staan (zie "Later" onderaan).
 
 ### 3. Vul de FTP-gegevens in op GitHub
 
-Ga in de repository naar **Settings → Secrets and variables → Actions → New repository secret** en maak deze secrets aan:
+Ga in de repository naar **Settings → Environments → Frisbee** (of **Settings → Secrets and variables → Actions**) en maak deze secrets aan:
 
 | Naam | Waarde |
 |---|---|
