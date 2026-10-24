@@ -33,7 +33,7 @@ if ($p === 'setup') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
         if ($locked = login_locked()) $error = 'Te veel pogingen. Probeer opnieuw over ' . ceil($locked / 60) . ' minuten.';
-        elseif ($code === '' || !hash_equals($code, trim((string)($_POST['code'] ?? '')))) { login_failed(); $error = 'De installatiecode klopt niet. Je vindt ze in het bestand INSTALLATIECODE.txt dat bij het pakket zat.'; }
+        elseif ($code === '' || !hash_equals($code, trim((string)($_POST['code'] ?? '')))) { login_failed(); $error = 'De installatiecode klopt niet. Gebruik de code die je op GitHub als secret INSTALLATIECODE instelde.'; }
         elseif (mb_strlen((string)($_POST['pw'] ?? '')) < 10) $error = 'Kies een wachtwoord van minstens 10 tekens.';
         elseif (($_POST['pw'] ?? '') !== ($_POST['pw2'] ?? '')) $error = 'De twee wachtwoorden zijn niet gelijk.';
         else {
@@ -49,10 +49,10 @@ if ($p === 'setup') {
     }
     auth_page('Beheer installeren', 'Stel je wachtwoord in om het beheerpaneel te activeren.', $error, '
       ' . csrf_field() . '
-      <div class="field"><label for="code">Installatiecode</label><input id="code" name="code" autocomplete="off" required><small>Staat in INSTALLATIECODE.txt bij het installatiepakket.</small></div>
+      <div class="field"><label for="code">Installatiecode</label><input id="code" name="code" autocomplete="off" required><small>De code die je op GitHub als secret INSTALLATIECODE instelde.</small></div>
       <div class="field"><label for="pw">Nieuw wachtwoord</label><input id="pw" name="pw" type="password" autocomplete="new-password" minlength="10" required><small>Minstens 10 tekens.</small></div>
       <div class="field"><label for="pw2">Herhaal wachtwoord</label><input id="pw2" name="pw2" type="password" autocomplete="new-password" minlength="10" required></div>
-      <button class="btn-main" type="submit">Beheer activeren</button>', $code === '' ? 'De installatiecode ontbreekt op de server. Upload het bestand data/installatiecode.php opnieuw uit het pakket.' : '');
+      <button class="btn-main" type="submit">Beheer activeren</button>', $code === '' ? 'De installatiecode ontbreekt op de server. Stel op GitHub het secret INSTALLATIECODE in en start de uitrol opnieuw.' : '');
     exit;
 }
 
