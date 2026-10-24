@@ -65,6 +65,39 @@
   if (copyBtn) copyBtn.addEventListener('click', () => copy($('#mail').textContent.trim(), 'E-mailadres gekopieerd'));
   $$('.swatch').forEach(s => s.addEventListener('click', () => copy(s.dataset.hex, 'Kleur gekopieerd: ' + s.dataset.hex)));
 
+  // Contact form: send in the background, show errors next to the fields
+  const form = $('#cform');
+  if (form && window.fetch && window.FormData) {
+    const msg = $('#cf-msg'), btn = form.querySelector('button[type=submit]');
+    const clear = () => { form.querySelectorAll('[data-err]').forEach(e => { e.textContent = ''; e.closest('.cf')?.classList.remove('bad'); }); msg.textContent = ''; msg.classList.remove('err'); };
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      clear();
+      btn.disabled = true;
+      msg.textContent = 'Bezig met versturen…';
+      try {
+        const r = await fetch(form.action, {method: 'POST', body: new FormData(form), headers: {Accept: 'application/json'}});
+        const res = await r.json();
+        if (res.ok) {
+          form.classList.add('sent');
+          msg.textContent = res.melding;
+          form.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'center'});
+          return;
+        }
+        Object.entries(res.fouten || {}).forEach(([k, v]) => {
+          const el = form.querySelector(`[data-err="${k}"]`);
+          if (el) { el.textContent = v; el.closest('.cf')?.classList.add('bad'); }
+        });
+        if (res.captcha) { $('#cf-q').textContent = res.captcha.vraag; $('#cf-token').value = res.captcha.token; $('#cf-captcha').value = ''; }
+        if (window.turnstile) window.turnstile.reset();
+        msg.textContent = res.melding; msg.classList.add('err');
+        form.querySelector('.cf.bad input, .cf.bad textarea')?.focus();
+      } catch {
+        msg.textContent = 'Versturen lukte niet. Controleer je internetverbinding en probeer opnieuw.'; msg.classList.add('err');
+      } finally { btn.disabled = false; }
+    });
+  }
+
   // Case gallery lightbox
   const lb = $('#lb');
   const shots = $$('.shot');

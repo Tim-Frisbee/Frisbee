@@ -63,8 +63,10 @@ Ga naar het tabblad **Actions → Uitrol naar frisbee.agency → Run workflow**.
 |---|---|
 | **Algemeen** | Naam, beschrijving voor Google, e-mail, sociale media, footer |
 | **Homepage** | Hero, labels rond de schijf, lichtkrant, uitgelicht project, titels, werkwijze, contactblok |
-| **Diensten** | De diensten, met illustratie of eigen foto |
+| **Berichten** | Alle berichten uit het contactformulier, ook als de mail niet aankwam |
+| **Diensten** | De diensten en hun eigen pagina: intro, inhoudsblokken, "wat je krijgt", beelden en realisaties |
 | **Realisaties** | Cases toevoegen, ordenen, verbergen, verwijderen en volledig invullen |
+| **Formulier** | Ontvangers, teksten, velden, mailserver en captcha van het contactformulier |
 | **Beelden** | Beelden bekijken, uploaden en ongebruikte verwijderen |
 | **Back-ups** | Elke opslag maakt een back-up. Hier zet je een oudere versie terug |
 | **Wachtwoord** | Je wachtwoord wijzigen |
@@ -76,16 +78,42 @@ Ga naar het tabblad **Actions → Uitrol naar frisbee.agency → Run workflow**.
 - **Verborgen cases:** die zie je zelf wel op de site zolang je ingelogd bent.
 - **Bewerken vanaf de site:** ben je ingelogd, dan zie je bovenaan de site een balk met **Bewerk deze pagina**.
 
+## Contactformulier
+
+Het formulier staat onderaan elke pagina. Op een dienstpagina staat die dienst al voorgeselecteerd.
+
+- **Opslag:** elk bericht wordt bewaard onder **Beheer → Berichten** en per mail doorgestuurd naar de ontvangers die je onder **Formulier** instelt. Leeg = het e-mailadres onder Algemeen.
+- **Spambeveiliging:**
+  - een rekenvraag als captcha
+  - een onzichtbaar lokveld voor bots
+  - een minimale invultijd
+  - maximaal 5 berichten per uur per bezoeker
+- **Cloudflare Turnstile:** wil je liever een onzichtbare captcha, vul dan de sleutels in onder Formulier → Captcha.
+
+### Zorg dat de mails aankomen
+
+Standaard verstuurt de webserver de mails zelf. Twee dingen maken het betrouwbaarder:
+
+1. **Mailserver invullen (aangeraden):** ga naar **Beheer → Formulier → Versturen via je eigen mailserver** en vul de gegevens van een mailbox in, bijvoorbeeld een `website@frisbee.agency`-mailbox in Plesk. Klik daarna op **Opslaan en testmail sturen**.
+2. **SPF-record herstellen:** je domein heeft nu **twee** SPF-records. Dat is ongeldig, waardoor mails namens frisbee.agency sneller als spam worden gezien, ook je gewone mails. Voeg ze samen tot **één** TXT-record. Een voorbeeld, laat je hoster of mailprovider dit nakijken:
+
+   ```
+   v=spf1 a mx include:spf.protection.outlook.com include:spf.cloudemail.be include:_spf.relay.mailprotect.be -all
+   ```
+
+   Verwijder daarna het tweede record dat met `v=spf1` begint. De `MS=ms60745920`-waarde hoort in een apart TXT-record.
+
 ## Wat staat waar
 
 | Map / bestand | Inhoud | In GitHub? |
 |---|---|---|
-| `site/index.php`, `site/case.php` | De pagina's | Ja |
+| `site/index.php`, `site/case.php`, `site/dienst.php` | De pagina's | Ja |
+| `site/contact.php`, `site/inc/contact.php` | Het contactformulier | Ja |
 | `site/admin/` | Het beheerpaneel | Ja |
 | `site/assets/` | Opmaak, effecten, logo | Ja |
 | `site/inc/` | Kernlogica, illustraties, startinhoud | Ja |
 | `site/uploads/` | Beelden. De startbeelden staan in GitHub, beelden die je via het beheer uploadt alleen op de server | Deels |
-| `site/data/` | Je teksten, wachtwoord en back-ups | **Nee**, alleen op de server |
+| `site/data/` | Je teksten, wachtwoord, back-ups, berichten en mailinstellingen | **Nee**, alleen op de server |
 
 **Back-up van je inhoud:** die staat niet in GitHub. Download af en toe de mappen `data/` en `uploads/` via Plesk, of laat Plesk automatische back-ups maken.
 

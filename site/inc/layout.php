@@ -21,7 +21,10 @@ function page_start(string $title, string $description, string $editLink = ''): 
 <meta property="og:title" content="<?= h($title) ?>">
 <meta property="og:description" content="<?= h($description) ?>">
 <meta property="og:type" content="website">
-<link rel="icon" href="<?= h(asset_v('assets/favicon.png')) ?>">
+<link rel="icon" type="image/png" sizes="32x32" href="<?= h(asset_v('assets/favicon-32.png')) ?>">
+<link rel="icon" type="image/png" sizes="64x64" href="<?= h(asset_v('assets/favicon.png')) ?>">
+<link rel="apple-touch-icon" href="<?= h(asset_v('assets/apple-touch-icon.png')) ?>">
+<meta name="theme-color" content="#160C24">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="<?= h(FR_FONTS) ?>">
@@ -46,22 +49,50 @@ function page_start(string $title, string $description, string $editLink = ''): 
 </header>
 <?php }
 
-function site_cta(): void {
-    $s = content()['site']; $h = content()['home'];
-    $contact = safe_url($s['contact_link'] ?? '') ?: 'mailto:' . ($s['email'] ?? ''); ?>
+function site_cta(string $dienst = '', string $titel = '', string $tekst = ''): void {
+    require_once __DIR__ . '/contact.php';
+    $s = content()['site']; $h = content()['home']; $f = form_settings();
+    [$q, $token] = captcha_new();
+    $ts = uses_turnstile() ? turnstile_keys()[0] : '';
+    $diensten = visible_diensten();
+    $budgets = array_filter(array_map('trim', explode("\n", $f['budget_opties']))); ?>
   <section class="cta" id="contact">
     <div class="wrap">
-      <div class="cta-card reveal">
-        <span class="eyebrow" style="color:var(--ink)"><?= h($h['cta_label'] ?? '') ?></span>
-        <h2><?= accent($h['cta_titel'] ?? '') ?></h2>
-        <p><?= h($h['cta_tekst'] ?? '') ?></p>
-        <div class="cta-actions">
-          <a class="btn" href="<?= h($contact) ?>"><?= h($h['cta_knop_tekst'] ?? 'Contacteer ons') ?> <span class="arr">→</span></a>
-          <?php if (!empty($s['email'])): ?><div class="mailbox"><span id="mail"><?= h($s['email']) ?></span><button type="button" id="copy">Kopieer</button></div><?php endif; ?>
+      <div class="contact-grid">
+        <div class="cta-card reveal">
+          <span class="eyebrow" style="color:var(--ink)"><?= h($h['cta_label'] ?? '') ?></span>
+          <h2><?= accent($titel ?: ($h['cta_titel'] ?? '')) ?></h2>
+          <p><?= h($tekst ?: ($h['cta_tekst'] ?? '')) ?></p>
+          <?php if (!empty($s['email'])): ?><div class="cta-actions"><div class="mailbox"><span id="mail"><?= h($s['email']) ?></span><button type="button" id="copy">Kopieer</button></div></div><?php endif; ?>
         </div>
+        <form class="cform reveal" id="cform" method="post" action="contact.php" novalidate>
+          <div class="cform-head"><h3><?= h($f['titel']) ?></h3><?php if ($f['intro']): ?><p><?= h($f['intro']) ?></p><?php endif; ?></div>
+          <input type="hidden" name="pagina" value="<?= h(strtok($_SERVER['REQUEST_URI'] ?? '/', '#')) ?>">
+          <div class="hp" aria-hidden="true"><label for="cf-website">Laat dit veld leeg</label><input id="cf-website" name="website" tabindex="-1" autocomplete="off"></div>
+          <div class="cgrid">
+            <div class="cf"><label for="cf-naam">Naam *</label><input id="cf-naam" name="naam" required autocomplete="name" maxlength="120"><em data-err="naam"></em></div>
+            <div class="cf"><label for="cf-email">E-mail *</label><input id="cf-email" name="email" type="email" required autocomplete="email" maxlength="200"><em data-err="email"></em></div>
+            <?php if ($f['telefoon']): ?><div class="cf"><label for="cf-tel">Telefoon</label><input id="cf-tel" name="telefoon" type="tel" autocomplete="tel" maxlength="40"><em data-err="telefoon"></em></div><?php endif; ?>
+            <?php if ($f['bedrijf']): ?><div class="cf"><label for="cf-bedrijf">Bedrijf</label><input id="cf-bedrijf" name="bedrijf" autocomplete="organization" maxlength="120"></div><?php endif; ?>
+            <?php if ($diensten): ?><div class="cf"><label for="cf-dienst">Waarover gaat het?</label><select id="cf-dienst" name="dienst"><option value="">Kies een dienst (optioneel)</option><?php foreach ($diensten as $d): ?><option value="<?= h($d['id']) ?>"<?= $d['id'] === $dienst ? ' selected' : '' ?>><?= h($d['titel']) ?></option><?php endforeach; ?></select></div><?php endif; ?>
+            <?php if ($f['budget'] && $budgets): ?><div class="cf"><label for="cf-budget">Budget</label><select id="cf-budget" name="budget"><option value="">Geen idee / liever niet</option><?php foreach ($budgets as $b): ?><option><?= h($b) ?></option><?php endforeach; ?></select></div><?php endif; ?>
+            <div class="cf full"><label for="cf-bericht">Je bericht *</label><textarea id="cf-bericht" name="bericht" rows="5" required maxlength="5000"></textarea><em data-err="bericht"></em></div>
+            <div class="cf full check"><label><input type="checkbox" name="privacy" value="1" required> <span><?= h($f['privacy']) ?></span></label><em data-err="privacy"></em></div>
+            <?php if ($ts): ?>
+            <div class="cf full"><div class="cf-turnstile" data-sitekey="<?= h($ts) ?>" data-language="nl"></div><em data-err="captcha"></em></div>
+            <?php else: ?>
+            <div class="cf captcha"><label for="cf-captcha" id="cf-q"><?= h($q) ?></label><input id="cf-captcha" name="captcha" inputmode="numeric" required maxlength="3" autocomplete="off"><input type="hidden" name="captcha_token" id="cf-token" value="<?= h($token) ?>"><em data-err="captcha"></em></div>
+            <?php endif; ?>
+          </div>
+          <div class="cform-foot">
+            <p class="cform-msg" id="cf-msg" role="status" aria-live="polite"></p>
+            <button class="btn" type="submit"><span class="lbl"><?= h($h['cta_knop_tekst'] ?? 'Verstuur') ?></span> <span class="arr">→</span></button>
+          </div>
+        </form>
       </div>
     </div>
   </section>
+  <?php if ($ts): ?><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script><?php endif; ?>
 <?php }
 
 function site_footer(): void {
@@ -84,7 +115,7 @@ function site_footer(): void {
         </div>
       </div>
       <div><h4>Diensten</h4><ul>
-        <?php foreach ($c['diensten'] as $d): ?><li><a href="./#dienst-<?= h($d['id']) ?>"><?= h($d['titel']) ?></a></li><?php endforeach; ?>
+        <?php foreach (visible_diensten() as $d): ?><li><a href="<?= h(dienst_url($d)) ?>"><?= h($d['titel']) ?></a></li><?php endforeach; ?>
       </ul></div>
       <div><h4>Realisaties</h4><ul>
         <?php foreach (array_slice(visible_cases(), 0, 5) as $cs): ?><li><a href="case.php?c=<?= h(rawurlencode($cs['slug'])) ?>"><?= h($cs['naam']) ?></a></li><?php endforeach; ?>

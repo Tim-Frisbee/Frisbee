@@ -7,6 +7,7 @@
 declare(strict_types=1);
 require __DIR__ . '/../inc/core.php';
 require __DIR__ . '/forms.php';
+require __DIR__ . '/../inc/contact.php';
 
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
@@ -119,17 +120,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
 
             case 'diensten':
-                $rows = read_repeater('diensten', ['titel' => ['text'], 'tekst' => ['area'], 'illustratie' => [['' => '']], 'afbeelding' => ['image']]);
-                $seen = [];
-                foreach ($rows as &$r) {
-                    $id = slugify($r['titel'] ?: 'dienst'); $base = $id; $i = 2;
-                    while (isset($seen[$id])) $id = $base . '-' . $i++;
-                    $seen[$id] = true;
-                    $r = ['id' => $id] + $r;
-                    if (!in_array($r['illustratie'], ['websites', 'logos', 'branding', 'software', ''], true)) $r['illustratie'] = '';
+                $ds = all_diensten();
+                $id = post_str($_POST['id'] ?? '');
+                $i = array_search($id, array_column($ds, 'id'), true);
+                if ($i === false) throw new RuntimeException('Die dienst bestaat niet meer.');
+                $act = $_POST['actie'] ?? '';
+                if ($act === 'omhoog' && $i > 0) [$ds[$i - 1], $ds[$i]] = [$ds[$i], $ds[$i - 1]];
+                if ($act === 'omlaag' && $i < count($ds) - 1) [$ds[$i + 1], $ds[$i]] = [$ds[$i], $ds[$i + 1]];
+                if ($act === 'zichtbaar') $ds[$i]['zichtbaar'] = !$ds[$i]['zichtbaar'];
+                if ($act === 'verwijder') { $name = $ds[$i]['titel']; array_splice($ds, $i, 1); flash('Dienst "' . $name . '" is verwijderd. Je kan ze terugzetten via Back-ups.'); }
+                $c['diensten'] = array_values($ds);
+                save_content($c);
+                if ($act !== 'verwijder') flash('Bijgewerkt.');
+                go('?p=diensten');
+
+            case 'dienst':
+                $ds = all_diensten();
+                $orig = post_str($_POST['orig_id'] ?? '');
+                $titel = post_str($_POST['titel'] ?? '', 80);
+                if ($titel === '') throw new RuntimeException('Geef de dienst een titel.');
+                $id = slugify(post_str($_POST['id'] ?? '') ?: $titel);
+                $taken = array_column(array_filter($ds, fn($x) => $x['id'] !== $orig), 'id');
+                $base = $id; $n = 2; while (in_array($id, $taken, true)) $id = $base . '-' . $n++;
+                $ill = post_str($_POST['illustratie'] ?? '');
+                $caseSlugs = array_column($cases, 'slug');
+                $new = normalize_dienst([
+                    'id' => $id, 'titel' => $titel, 'tekst' => post_str($_POST['tekst'] ?? '', 300),
+                    'illustratie' => in_array($ill, ['websites', 'logos', 'branding', 'software'], true) ? $ill : '',
+                    'afbeelding' => read_image('afbeelding', post_str($_POST['afbeelding'] ?? '')),
+                    'zichtbaar' => !empty($_POST['zichtbaar']),
+                    'pagina_titel' => post_str($_POST['pagina_titel'] ?? '', 160), 'intro' => post_str($_POST['intro'] ?? '', 1500),
+                    'hoofdbeeld' => read_image('hoofdbeeld', post_str($_POST['hoofdbeeld'] ?? '')),
+                    'secties' => read_repeater('secties', ['titel' => ['text'], 'tekst' => ['area'], 'afbeelding' => ['image']]),
+                    'leveren' => read_repeater('leveren', ['titel' => ['text'], 'tekst' => ['text']]),
+                    'galerij' => read_gallery(),
+                    'cases' => array_values(array_intersect(array_map('strval', (array)($_POST['cases'] ?? [])), $caseSlugs)),
+                    'cta_titel' => post_str($_POST['cta_titel'] ?? '', 160), 'cta_tekst' => post_str($_POST['cta_tekst'] ?? '', 400),
+                ]);
+                $found = false;
+                foreach ($ds as $k => $x) if ($orig !== '' && $x['id'] === $orig) { $ds[$k] = $new; $found = true; }
+                if (!$found) $ds[] = $new;
+                // keep links in the marquee working when the address changes
+                if ($orig !== '' && $orig !== $id) foreach ($c['home']['lichtkrant'] ?? [] as $k => $l)
+                    $c['home']['lichtkrant'][$k]['link'] = str_replace(['#dienst-' . $orig, 'd=' . $orig], ['#dienst-' . $id, 'd=' . $id], $l['link'] ?? '');
+                $c['diensten'] = $ds;
+                save_content($c);
+                flash('Dienst "' . $titel . '" is opgeslagen.');
+                go('?p=dienst&id=' . rawurlencode($id));
+
+            case 'formulier':
+                $f = form_settings();
+                foreach (['titel' => 160, 'intro' => 400, 'ontvangers' => 500, 'onderwerp' => 160, 'bedankt' => 400, 'budget_opties' => 600, 'privacy' => 400] as $k => $max) $f[$k] = post_str($_POST[$k] ?? '', $max);
+                foreach (['telefoon', 'bedrijf', 'budget'] as $k) $f[$k] = !empty($_POST[$k]);
+                foreach (preg_split('/[\s,;]+/', $f['ontvangers'], -1, PREG_SPLIT_NO_EMPTY) as $e)
+                    if (!filter_var($e, FILTER_VALIDATE_EMAIL)) throw new RuntimeException('"' . $e . '" is geen geldig e-mailadres.');
+                $c['formulier'] = $f;
+                // mail server and captcha keys live in config (not in content backups)
+                $cfg = config();
+                $smtp = $cfg['smtp'] ?? [];
+                $smtp['host'] = post_str($_POST['smtp_host'] ?? '', 200);
+                $smtp['poort'] = (int)($_POST['smtp_poort'] ?? 587) ?: 587;
+                $smtp['beveiliging'] = in_array($_POST['smtp_beveiliging'] ?? '', ['tls', 'ssl'], true) ? $_POST['smtp_beveiliging'] : 'tls';
+                $smtp['gebruiker'] = post_str($_POST['smtp_gebruiker'] ?? '', 200);
+                $smtp['afzender'] = post_str($_POST['smtp_afzender'] ?? '', 200);
+                if ($smtp['afzender'] !== '' && !filter_var($smtp['afzender'], FILTER_VALIDATE_EMAIL)) throw new RuntimeException('Het afzenderadres is geen geldig e-mailadres.');
+                if (($pw = (string)($_POST['smtp_wachtwoord'] ?? '')) !== '') $smtp['wachtwoord'] = $pw;
+                if (!empty($_POST['smtp_wis'])) $smtp = [];
+                $cfg['smtp'] = $smtp;
+                $cfg['turnstile_site'] = post_str($_POST['turnstile_site'] ?? '', 200);
+                if (($ts = post_str($_POST['turnstile_geheim'] ?? '', 200)) !== '') $cfg['turnstile_geheim'] = $ts;
+                if ($cfg['turnstile_site'] === '') unset($cfg['turnstile_geheim']);
+                save_config($cfg);
+                save_content($c);
+                if (($_POST['actie'] ?? '') === 'test') {
+                    $to = form_recipients();
+                    $err = $to ? send_mail($to, 'Testbericht van je website', "Dit is een testbericht vanuit het beheer van " . ($c['site']['naam'] ?? 'je website') . ".\n\nKomt deze mail aan, dan werkt het contactformulier.") : 'Er is geen ontvanger ingesteld.';
+                    flash($err === '' ? 'Instellingen opgeslagen en testmail verstuurd naar ' . implode(', ', $to) . '. Kijk ook in je spammap.' : 'Instellingen opgeslagen, maar de testmail lukte niet: ' . $err, $err === '' ? 'ok' : 'err');
+                } else flash('Instellingen opgeslagen.');
+                go('?p=formulier');
+
+            case 'berichten':
+                $all = messages();
+                $id = post_str($_POST['id'] ?? '');
+                $act = $_POST['actie'] ?? '';
+                if ($act === 'alles-gelezen') foreach ($all as &$m) $m['gelezen'] = true;
+                unset($m);
+                foreach ($all as $k => $m) if ($m['id'] === $id) {
+                    if ($act === 'gelezen') $all[$k]['gelezen'] = !$all[$k]['gelezen'];
+                    if ($act === 'verwijder') unset($all[$k]);
                 }
-                $c['diensten'] = $rows;
-                break;
+                save_messages($all);
+                flash($act === 'verwijder' ? 'Bericht verwijderd.' : 'Bijgewerkt.');
+                go('?p=berichten');
 
             case 'case':
                 $orig = post_str($_POST['orig_slug'] ?? '');
@@ -243,7 +325,9 @@ switch ($p) {
         $cards = [
             ['algemeen', 'Algemeen', 'Naam, e-mail, sociale media en footer.'],
             ['home', 'Homepage', 'Hero, lichtkrant, uitgelicht project, werkwijze en contactblok.'],
-            ['diensten', 'Diensten', count($c['diensten']) . ' diensten met tekst en beeld.'],
+            ['berichten', 'Berichten', ($u = count(array_filter(messages(), fn($m) => !$m['gelezen']))) ? $u . ' ongelezen bericht' . ($u > 1 ? 'en' : '') . '.' : 'Geen nieuwe berichten.'],
+            ['diensten', 'Diensten', count($c['diensten']) . ' diensten, elk met een eigen pagina.'],
+            ['formulier', 'Contactformulier', 'Ontvangers, velden, mailserver en captcha.'],
             ['cases', 'Realisaties', count($cases) . ' cases, waarvan ' . $vis . ' zichtbaar.'],
             ['media', 'Beelden', count(all_uploads()) . ' beelden in de bibliotheek.'],
             ['backups', 'Back-ups', 'Elke opslag maakt automatisch een back-up.'],
@@ -267,7 +351,7 @@ switch ($p) {
             . f_text('nav_knop', 'Knop rechtsboven', $s['nav_knop'] ?? '')
             . '</section><section class="panel"><h2>Contact</h2>'
             . f_text('email', 'E-mailadres', $s['email'] ?? '', '', ['type' => 'email'])
-            . f_text('contact_link', 'Link van de knop "Contacteer ons"', $s['contact_link'] ?? '', 'Leeg laten = de knop opent een e-mail naar het adres hierboven.')
+            . f_text('contact_link', 'Link "Contactformulier" in de footer (optioneel)', $s['contact_link'] ?? '', 'Alleen nodig als je een aparte contactpagina hebt. Het formulier zelf stel je in onder Formulier.')
             . '</section><section class="panel"><h2>Sociale media</h2><p class="help">Laat een veld leeg om het icoon te verbergen.</p>'
             . f_text('facebook', 'Facebook', $s['facebook'] ?? '') . f_text('instagram', 'Instagram', $s['instagram'] ?? '') . f_text('linkedin', 'LinkedIn', $s['linkedin'] ?? '')
             . '</section><section class="panel"><h2>Footer</h2>'
@@ -303,17 +387,114 @@ switch ($p) {
             . f_repeater('stappen', 'Stappen', $hh['stappen'] ?? [], ['titel' => ['text', 'Titel', ''], 'tekst' => ['area', 'Uitleg', '']], 'Stap toevoegen', 'De nummers 01, 02, … worden automatisch toegevoegd.')
             . '</section><section class="panel"><h2>Contactblok</h2>'
             . '<div class="grid2">' . f_text('cta_label', 'Label', $hh['cta_label'] ?? '') . f_text('cta_titel', 'Titel', $hh['cta_titel'] ?? '', $accentHelp) . '</div>'
-            . f_area('cta_tekst', 'Tekst', $hh['cta_tekst'] ?? '', '', 2) . f_text('cta_knop_tekst', 'Tekst op de knop', $hh['cta_knop_tekst'] ?? '')
+            . f_area('cta_tekst', 'Tekst', $hh['cta_tekst'] ?? '', '', 2) . f_text('cta_knop_tekst', 'Tekst op de verzendknop van het formulier', $hh['cta_knop_tekst'] ?? '')
             . '</section>' . form_close();
         break;
 
     case 'diensten':
         $title = 'Diensten'; $view = '../#diensten';
-        $ills = ['websites' => 'Illustratie: websites', 'logos' => "Illustratie: logo's", 'branding' => 'Illustratie: branding', 'software' => 'Illustratie: software', '' => 'Geen illustratie'];
-        $body = form_open() . '<section class="panel">'
-            . f_repeater('diensten', 'Diensten', $c['diensten'], ['titel' => ['text', 'Titel', ''], 'tekst' => ['area', 'Tekst', ''], 'illustratie' => [$ills, 'Beeld', 'Kies een van de vier illustraties in huisstijl.'], 'afbeelding' => ['image', 'Eigen afbeelding (optioneel)', 'Vervangt de illustratie. Liefst liggend, 16:9.']], 'Dienst toevoegen',
-                'De volgorde hier is de volgorde op de site. Elke dienst krijgt automatisch een anker, bv. #dienst-websites, dat je in de lichtkrant kan gebruiken.')
-            . '</section>' . form_close();
+        $ds = all_diensten();
+        $body = '<div class="toolbar"><a class="btn-main" href="?p=dienst">+ Nieuwe dienst</a><p class="help">De volgorde hier is de volgorde op de homepage. Elke dienst heeft een eigen pagina.</p></div><ul class="caselist">';
+        foreach ($ds as $i => $x) {
+            $thumb = safe_img($x['afbeelding']) ?: safe_img($x['hoofdbeeld']);
+            $filled = count(array_filter([$x['intro'], $x['secties'], $x['leveren'], $x['galerij']]));
+            $body .= '<li class="' . ($x['zichtbaar'] ? '' : 'hidden-case') . '"><span class="thumb" style="background:#160C24">' . ($thumb ? '<img src="../' . h($thumb) . '" alt="" style="object-fit:cover">' : '<b style="color:#00CC99;font-family:var(--f-display)">' . h(mb_substr($x['titel'], 0, 1)) . '</b>') . '</span>'
+                . '<a class="cname" href="?p=dienst&amp;id=' . h(rawurlencode($x['id'])) . '"><b>' . h($x['titel']) . '</b><span>' . ($x['zichtbaar'] ? 'Zichtbaar' : 'Verborgen') . ' · pagina ' . $filled . '/4 onderdelen ingevuld</span></a>'
+                . '<div class="ctools">' . ($i > 0 ? list_action('diensten', 'id', $x['id'], 'omhoog', 'Omhoog', '↑') : '<span class="icon ghost"></span>') . ($i < count($ds) - 1 ? list_action('diensten', 'id', $x['id'], 'omlaag', 'Omlaag', '↓') : '<span class="icon ghost"></span>')
+                . list_action('diensten', 'id', $x['id'], 'zichtbaar', $x['zichtbaar'] ? 'Verbergen' : 'Zichtbaar maken', $x['zichtbaar'] ? '●' : '○')
+                . '<a class="icon" href="../' . h(dienst_url($x)) . '" target="_blank" title="Bekijk op de site" aria-label="Bekijk op de site">↗</a>'
+                . list_action('diensten', 'id', $x['id'], 'verwijder', 'Verwijderen', '✕', 'danger', 'Dienst ' . $x['titel'] . ' verwijderen?') . '</div></li>';
+        }
+        $body .= '</ul>';
+        break;
+
+    case 'dienst':
+        $id = (string)($_GET['id'] ?? '');
+        $x = $id !== '' ? find_dienst($id) : null;
+        if ($id !== '' && !$x) { flash('Die dienst bestaat niet.', 'err'); go('?p=diensten'); }
+        $x = $x ?? normalize_dienst(['zichtbaar' => false]);
+        $title = $x['titel'] ?: 'Nieuwe dienst';
+        $view = $x['id'] ? '../' . dienst_url($x) : '';
+        $ills = ['websites' => 'Websites', 'logos' => "Logo's", 'branding' => 'Branding', 'software' => 'Software', '' => 'Geen illustratie'];
+        $caseBoxes = '';
+        foreach ($cases as $cs) $caseBoxes .= '<label class="pick"><input type="checkbox" name="cases[]" value="' . h($cs['slug']) . '"' . (in_array($cs['slug'], $x['cases'], true) ? ' checked' : '') . '> <i style="background:' . h(safe_hex($cs['kleur'])) . '"></i>' . h($cs['naam']) . '</label>';
+        $auto = array_column(dienst_cases(['cases' => []] + $x), 'naam');
+        $body = form_open('?p=dienst' . ($x['id'] ? '&id=' . rawurlencode($x['id']) : '')) . '<input type="hidden" name="orig_id" value="' . h($x['id']) . '">'
+            . '<section class="panel"><h2>Kaart op de homepage</h2><div class="grid2">'
+            . f_text('titel', 'Titel', $x['titel'], '', ['required' => 'required'])
+            . f_text('id', 'Adres (slug)', $x['id'], 'Wordt dienst.php?d=<b>' . h($x['id'] ?: 'naam-van-de-dienst') . '</b>. Leeg = automatisch uit de titel.') . '</div>'
+            . f_area('tekst', 'Korte tekst', $x['tekst'], 'Eén zin. Staat op de kaart op de homepage en onder "Andere diensten".', 2)
+            . '<div class="grid2">' . f_select('illustratie', 'Illustratie', $x['illustratie'], $ills, 'Tekening in huisstijl voor de kaart en de dienstpagina.')
+            . f_image('afbeelding', 'Of een eigen foto voor de kaart', $x['afbeelding'], 'Vervangt de illustratie. Liggend, 16:9.') . '</div>'
+            . f_check('zichtbaar', 'Zichtbaar op de site', (bool)$x['zichtbaar'], 'Uitvinken om de dienst te verbergen terwijl je eraan werkt.')
+            . '</section><section class="panel"><h2>Bovenaan de dienstpagina</h2>'
+            . f_text('pagina_titel', 'Grote titel', $x['pagina_titel'], 'Leeg = de titel van de dienst. Zet woorden tussen *sterretjes* voor het groene accent, bv. "Websites die *écht* werken".')
+            . f_area('intro', 'Intro', $x['intro'], 'Een paar zinnen: wat houdt de dienst in en voor wie is ze? Een lege regel maakt een nieuwe alinea.', 4)
+            . f_image('hoofdbeeld', 'Groot beeld rechts (optioneel)', $x['hoofdbeeld'], 'Leeg = de illustratie wordt getoond. Liefst 4:3.')
+            . '</section><section class="panel"><h2>Inhoudsblokken</h2>'
+            . f_repeater('secties', 'Blokken', $x['secties'], ['titel' => ['text', 'Titel', ''], 'tekst' => ['area', 'Tekst', 'Een lege regel maakt een nieuwe alinea.'], 'afbeelding' => ['image', 'Beeld (optioneel)', 'Staat afwisselend links en rechts van de tekst.']], 'Blok toevoegen',
+                'Vertel hier het verhaal van de dienst: je aanpak, wat je anders doet, voor wie het is, …')
+            . '</section><section class="panel"><h2>Wat je krijgt</h2>'
+            . f_repeater('leveren', 'Punten', $x['leveren'], ['titel' => ['text', 'Punt', 'Bv. "Ontwerp op maat"'], 'tekst' => ['text', 'Korte uitleg (optioneel)', '']], 'Punt toevoegen', 'Verschijnt als lijst met vinkjes.')
+            . '</section><section class="panel"><h2>Beelden</h2>' . f_gallery($x['galerij'])
+            . '</section><section class="panel"><h2>Realisaties op deze pagina</h2><p class="help">Kies welke cases je hier toont. Kies je niets, dan verschijnen automatisch de cases met "' . h($x['titel'] ?: 'deze dienst') . '" bij hun diensten' . ($auto ? ' (nu: ' . h(implode(', ', $auto)) . ')' : ' (nu: geen)') . '.</p><div class="picks">' . $caseBoxes . '</div>'
+            . '</section><section class="panel"><h2>Contactblok onderaan</h2><p class="help">Leeg = dezelfde tekst als op de homepage. In het formulier staat deze dienst al voorgeselecteerd.</p><div class="grid2">'
+            . f_text('cta_titel', 'Titel', $x['cta_titel']) . f_text('cta_tekst', 'Tekst', $x['cta_tekst']) . '</div>'
+            . '</section>' . form_close('Dienst opslaan');
+        break;
+
+    case 'formulier':
+        $title = 'Contactformulier'; $view = '../#contact';
+        $f = form_settings(); $cfg = config(); $smtp = $cfg['smtp'] ?? [];
+        $to = form_recipients();
+        $body = form_open() . '<section class="panel"><h2>Ontvangen</h2>'
+            . f_text('ontvangers', 'Berichten sturen naar', $f['ontvangers'], 'Eén of meer e-mailadressen, gescheiden door komma\'s. Leeg = ' . h($c['site']['email'] ?? 'het e-mailadres onder Algemeen') . '.')
+            . f_text('onderwerp', 'Onderwerp van de mail', $f['onderwerp'], 'De gekozen dienst wordt er automatisch achter gezet.')
+            . '<p class="help">Elk bericht wordt ook bewaard onder <a href="?p=berichten">Berichten</a>, dus je mist nooit iets, ook als de mail niet aankomt.</p>'
+            . '</section><section class="panel"><h2>Teksten</h2><div class="grid2">'
+            . f_text('titel', 'Titel boven het formulier', $f['titel']) . f_text('intro', 'Korte tekst', $f['intro']) . '</div>'
+            . f_area('bedankt', 'Bedankboodschap', $f['bedankt'], 'Verschijnt na het versturen.', 2)
+            . f_area('privacy', 'Tekst bij het toestemmingsvakje', $f['privacy'], 'Verplicht voor de privacywet (GDPR).', 2)
+            . '</section><section class="panel"><h2>Velden</h2><p class="help">Naam, e-mail, bericht en de controlevraag staan er altijd. Een keuzelijst met je diensten verschijnt automatisch.</p><div class="grid3">'
+            . f_check('telefoon', 'Telefoonnummer', (bool)$f['telefoon']) . f_check('bedrijf', 'Bedrijfsnaam', (bool)$f['bedrijf']) . f_check('budget', 'Budget (keuzelijst)', (bool)$f['budget']) . '</div>'
+            . f_area('budget_opties', 'Budgetopties', $f['budget_opties'], 'Eén optie per regel.', 4)
+            . '</section><section class="panel"><h2>Versturen via je eigen mailserver (aangeraden)</h2>'
+            . '<p class="help">Zonder mailserver verstuurt de webserver zelf de mail. Die komt dan vaak in de spam terecht. Vul hier bij voorkeur de gegevens van een mailbox in, bv. van Plesk of Microsoft 365.</p><div class="grid2">'
+            . f_text('smtp_host', 'Mailserver (SMTP)', $smtp['host'] ?? '', 'Bv. mail.frisbee.agency of smtp.office365.com. Leeg = niet gebruiken.')
+            . '<div class="grid2">' . f_text('smtp_poort', 'Poort', (string)($smtp['poort'] ?? 587)) . f_select('smtp_beveiliging', 'Beveiliging', $smtp['beveiliging'] ?? 'tls', ['tls' => 'STARTTLS (587)', 'ssl' => 'SSL (465)']) . '</div>'
+            . f_text('smtp_gebruiker', 'Gebruikersnaam', $smtp['gebruiker'] ?? '', 'Meestal het volledige e-mailadres.')
+            . '<div class="field"><label for="smtp_wachtwoord">Wachtwoord</label><input type="password" id="smtp_wachtwoord" name="smtp_wachtwoord" autocomplete="new-password" placeholder="' . (!empty($smtp['wachtwoord']) ? '•••••••• (ingesteld, leeg laten om te behouden)' : '') . '"><small>Wordt veilig op de server bewaard en nooit getoond.</small></div>'
+            . f_text('smtp_afzender', 'Afzenderadres', $smtp['afzender'] ?? '', 'Moet bij je mailbox horen, bv. website@frisbee.agency. Leeg = website@' . h(preg_replace('/^www\./', '', $_SERVER['HTTP_HOST'] ?? 'frisbee.agency')) . '.') . '</div>'
+            . (!empty($smtp) ? f_check('smtp_wis', 'Mailserver-gegevens wissen', false) : '')
+            . '</section><section class="panel"><h2>Captcha</h2>'
+            . '<p class="help">Standaard staat er een eenvoudige rekenvraag onder het formulier, samen met onzichtbare spamfilters. Wil je een onzichtbare captcha, maak dan een gratis <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener">Cloudflare Turnstile</a>-widget aan voor je domein en vul de sleutels hier in.</p><div class="grid2">'
+            . f_text('turnstile_site', 'Turnstile site key', $cfg['turnstile_site'] ?? '', 'Leeg = de rekenvraag gebruiken.')
+            . '<div class="field"><label for="turnstile_geheim">Turnstile secret key</label><input type="password" id="turnstile_geheim" name="turnstile_geheim" autocomplete="off" placeholder="' . (!empty($cfg['turnstile_geheim']) ? '•••••••• (ingesteld)' : '') . '"></div></div>'
+            . '</section><div class="savebar"><span class="dirty-note">Niet-opgeslagen wijzigingen</span><button class="btn-sec" type="submit" name="actie" value="test">Opslaan en testmail sturen' . ($to ? ' naar ' . h(implode(', ', $to)) : '') . '</button><button class="btn-main" type="submit">Opslaan</button></div></form>';
+        break;
+
+    case 'berichten':
+        $title = 'Berichten';
+        $all = messages();
+        $unread = count(array_filter($all, fn($m) => !$m['gelezen']));
+        $body = '<div class="toolbar"><p class="help">' . count($all) . ' berichten, waarvan ' . $unread . ' ongelezen. Klik op een bericht om het te openen.</p>'
+            . ($unread ? '<form method="post" action="?p=berichten">' . csrf_field() . '<input type="hidden" name="actie" value="alles-gelezen"><button class="btn-sec" type="submit">Alles als gelezen markeren</button></form>' : '') . '</div>';
+        if (!$all) $body .= '<section class="panel"><p>Nog geen berichten. Zodra iemand het contactformulier invult, verschijnt het hier.</p></section>';
+        $body .= '<div class="inbox">';
+        foreach ($all as $m) {
+            $when = date('d/m/Y H:i', strtotime($m['datum']));
+            $mailOk = ($m['mail'] ?? '') === 'verstuurd';
+            $body .= '<details class="msg-item' . ($m['gelezen'] ? '' : ' unread') . '"><summary><b>' . h($m['naam']) . '</b><span class="sub">' . h(mb_strimwidth($m['bericht'], 0, 90, '…')) . '</span>'
+                . ($m['dienst_naam'] ? '<span class="tagx">' . h($m['dienst_naam']) . '</span>' : '') . '<time>' . h($when) . '</time></summary><div class="msg-body">'
+                . '<dl>' . implode('', array_map(fn($k, $v) => $v !== '' ? '<dt>' . $k . '</dt><dd>' . $v . '</dd>' : '', ['E-mail', 'Telefoon', 'Bedrijf', 'Dienst', 'Budget', 'Pagina'],
+                    ['<a href="mailto:' . h($m['email']) . '">' . h($m['email']) . '</a>', $m['telefoon'] !== '' ? '<a href="tel:' . h(preg_replace('/[^0-9+]/', '', $m['telefoon'])) . '">' . h($m['telefoon']) . '</a>' : '', h($m['bedrijf']), h($m['dienst_naam']), h($m['budget'] ?? ''), h($m['pagina'] ?? '')])) . '</dl>'
+                . '<div class="msg-text">' . nl2br(h($m['bericht'])) . '</div>'
+                . '<p class="help">' . ($mailOk ? '✓ Doorgestuurd per mail.' : '⚠ Mail niet verstuurd: ' . h(preg_replace('/^mislukt: /', '', $m['mail'] ?? 'onbekend'))) . '</p>'
+                . '<div class="ctools"><a class="btn-sec" href="mailto:' . h($m['email']) . '?subject=' . rawurlencode('Re: je bericht aan ' . ($c['site']['naam'] ?? '')) . '">Beantwoorden</a>'
+                . list_action('berichten', 'id', $m['id'], 'gelezen', $m['gelezen'] ? 'Markeer als ongelezen' : 'Markeer als gelezen', $m['gelezen'] ? '○' : '●')
+                . list_action('berichten', 'id', $m['id'], 'verwijder', 'Verwijderen', '✕', 'danger', 'Dit bericht definitief verwijderen?') . '</div></div></details>';
+        }
+        $body .= '</div>';
         break;
 
     case 'cases':
@@ -435,7 +616,8 @@ function admin_head(string $title): void { ?>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title><?= h($title) ?> · Beheer</title>
-<link rel="icon" href="../assets/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@700;800&family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
 <link rel="stylesheet" href="admin.css?v=<?= @filemtime(__DIR__ . '/admin.css') ?>">
 </head>
@@ -458,8 +640,9 @@ function auth_page(string $title, string $intro, string $error, string $fields, 
 
 function admin_page(string $title, string $body, string $current, string $view): void {
     admin_head($title);
-    $nav = ['dashboard' => 'Overzicht', 'algemeen' => 'Algemeen', 'home' => 'Homepage', 'diensten' => 'Diensten', 'cases' => 'Realisaties', 'media' => 'Beelden', 'backups' => 'Back-ups', 'wachtwoord' => 'Wachtwoord'];
-    $active = $current === 'case' ? 'cases' : $current;
+    $unread = count(array_filter(messages(), fn($m) => !$m['gelezen']));
+    $nav = ['dashboard' => 'Overzicht', 'berichten' => 'Berichten' . ($unread ? ' (' . $unread . ')' : ''), 'algemeen' => 'Algemeen', 'home' => 'Homepage', 'diensten' => 'Diensten', 'cases' => 'Realisaties', 'formulier' => 'Formulier', 'media' => 'Beelden', 'backups' => 'Back-ups', 'wachtwoord' => 'Wachtwoord'];
+    $active = ['case' => 'cases', 'dienst' => 'diensten'][$current] ?? $current;
     $msgs = $_SESSION['flash'] ?? []; unset($_SESSION['flash']); ?>
 <body>
 <div class="shell">
@@ -473,7 +656,7 @@ function admin_page(string $title, string $body, string $current, string $view):
   </aside>
   <main class="main">
     <header class="top">
-      <div><?php if ($current === 'case'): ?><a class="back" href="?p=cases">← Alle realisaties</a><?php endif; ?><h1><?= h($title) ?></h1></div>
+      <div><?php if ($current === 'case'): ?><a class="back" href="?p=cases">← Alle realisaties</a><?php elseif ($current === 'dienst'): ?><a class="back" href="?p=diensten">← Alle diensten</a><?php endif; ?><h1><?= h($title) ?></h1></div>
       <?php if ($view): ?><a class="btn-sec" href="<?= h($view) ?>" target="_blank">Bekijk op de site ↗</a><?php endif; ?>
     </header>
     <?php foreach ($msgs as [$type, $m]): ?><div class="msg <?= $type === 'err' ? 'err' : 'ok' ?>" role="<?= $type === 'err' ? 'alert' : 'status' ?>"><?= h($m) ?></div><?php endforeach; ?>

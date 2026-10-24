@@ -106,3 +106,29 @@ function read_repeater(string $name, array $fields): array {
     }
     return $rows;
 }
+
+/** Gallery editor: current images with move/remove, plus multi-upload and "add existing". */
+function f_gallery(array $items, string $help = 'Gebruik de pijltjes om de volgorde te wijzigen. Het eerste beeld wordt groot getoond.'): string {
+    $html = '<div class="field"><span class="label">Galerij</span><div class="gal-list" data-gallery>';
+    foreach ($items as $g) if ($g = safe_img($g)) $html .= '<div class="gal-item"><img src="../' . h($g) . '" alt=""><input type="hidden" name="galerij[]" value="' . h($g) . '"><div class="rep-tools"><button type="button" class="icon" data-gmove="-1" aria-label="Naar links">←</button><button type="button" class="icon" data-gmove="1" aria-label="Naar rechts">→</button><button type="button" class="icon danger" data-gremove aria-label="Verwijderen uit galerij">✕</button></div></div>';
+    $existing = '<option value="">— kies een bestaand beeld —</option>';
+    foreach (all_uploads() as $u) $existing .= '<option value="' . h($u) . '">' . h(basename($u)) . '</option>';
+    return $html . '</div><small>' . h($help) . '</small></div>'
+        . '<div class="grid2"><div class="field"><label for="gnew">Beelden toevoegen</label><input type="file" id="gnew" name="galerij_nieuw[]" multiple accept="image/jpeg,image/png,image/webp,image/gif"><small>Je kan meerdere beelden tegelijk kiezen (max. 8 MB per beeld).</small></div>'
+        . '<div class="field"><label for="gexist">Of voeg een bestaand beeld toe</label><select id="gexist" name="galerij_bestaand">' . $existing . '</select></div></div>';
+}
+
+function read_gallery(): array {
+    $gal = [];
+    foreach ((array)($_POST['galerij'] ?? []) as $g) if ($g = safe_img(post_str($g))) $gal[] = $g;
+    foreach (files_list($_FILES['galerij_nieuw'] ?? null) as $f) if ($u = store_upload($f)) $gal[] = $u;
+    if ($add = safe_img(post_str($_POST['galerij_bestaand'] ?? ''))) $gal[] = $add;
+    return array_values(array_unique($gal));
+}
+
+/** Small list row with action buttons (used for services). */
+function list_action(string $page, string $keyName, string $key, string $act, string $label, string $icon, string $cls = '', string $confirm = ''): string {
+    return '<form method="post" action="?p=' . h($page) . '"' . ($confirm ? ' data-confirm="' . h($confirm) . '"' : '') . '>' . csrf_field()
+        . '<input type="hidden" name="' . h($keyName) . '" value="' . h($key) . '"><input type="hidden" name="actie" value="' . h($act) . '">'
+        . '<button type="submit" class="icon ' . h($cls) . '" title="' . h($label) . '" aria-label="' . h($label) . '">' . $icon . '</button></form>';
+}

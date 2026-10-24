@@ -80,3 +80,6 @@ jobs:
             data/config.php
             data/pogingen.php
             data/backups/inhoud-*.php
+            data/berichten.php
+            data/captcha-gebruikt.php
+            data/formulier-ip.php

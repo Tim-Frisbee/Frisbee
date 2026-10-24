@@ -28,19 +28,19 @@
     "lichtkrant": [
       {
         "tekst": "Logo's",
-        "link": "#dienst-logos"
+        "link": "dienst.php?d=logos"
       },
       {
         "tekst": "Websites",
-        "link": "#dienst-websites"
+        "link": "dienst.php?d=websites"
       },
       {
         "tekst": "Branding",
-        "link": "#dienst-branding"
+        "link": "dienst.php?d=branding"
       },
       {
         "tekst": "Software",
-        "link": "#dienst-software"
+        "link": "dienst.php?d=software"
       }
     ],
     "uitgelicht_case": "lineup",
@@ -88,28 +88,32 @@
       "titel": "Websites",
       "tekst": "Gebruiksvriendelijke websites die visueel overtuigen én converteren.",
       "illustratie": "websites",
-      "afbeelding": ""
+      "afbeelding": "",
+      "zichtbaar": true
     },
     {
       "id": "logos",
       "titel": "Logo's",
       "tekst": "Tijdloze logo's die je merk herkenbaar en onderscheidend maken.",
       "illustratie": "logos",
-      "afbeelding": ""
+      "afbeelding": "",
+      "zichtbaar": true
     },
     {
       "id": "branding",
       "titel": "Branding",
       "tekst": "Sterke merken met een duidelijke identiteit en een consistente uitstraling.",
       "illustratie": "branding",
-      "afbeelding": ""
+      "afbeelding": "",
+      "zichtbaar": true
     },
     {
       "id": "software",
       "titel": "Software",
       "tekst": "Softwarekwaliteit zonder compromissen: getest, betrouwbaar en toekomstgericht.",
       "illustratie": "software",
-      "afbeelding": ""
+      "afbeelding": "",
+      "zichtbaar": true
     }
   ],
   "cases": [

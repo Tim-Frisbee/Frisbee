@@ -8,3 +8,6 @@ site/data/*.tmp-*
 INSTALLATIECODE.txt
 *.zip
 .DS_Store
+site/data/berichten.php
+site/data/captcha-gebruikt.php
+site/data/formulier-ip.php

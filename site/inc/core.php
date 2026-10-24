@@ -231,3 +231,39 @@ function used_images(): array {
     array_walk_recursive($c, function ($v) use (&$used) { if (is_string($v) && str_starts_with($v, 'uploads/')) $used[$v] = true; });
     return $used;
 }
+
+/* ---------- Services ---------- */
+
+const FR_DIENST_DEFAULTS = ['id' => '', 'titel' => '', 'tekst' => '', 'illustratie' => '', 'afbeelding' => '', 'zichtbaar' => true,
+    'pagina_titel' => '', 'intro' => '', 'hoofdbeeld' => '', 'secties' => [], 'leveren' => [], 'galerij' => [], 'cases' => [],
+    'cta_titel' => '', 'cta_tekst' => ''];
+
+function normalize_dienst(array $d): array {
+    $d = array_replace(FR_DIENST_DEFAULTS, array_intersect_key($d, FR_DIENST_DEFAULTS));
+    $d['zichtbaar'] = $d['zichtbaar'] !== false;
+    return $d;
+}
+
+function all_diensten(): array { return array_map('normalize_dienst', content()['diensten']); }
+function visible_diensten(): array { return array_values(array_filter(all_diensten(), fn($d) => $d['zichtbaar'])); }
+
+function find_dienst(string $id): ?array {
+    foreach (all_diensten() as $d) if ($d['id'] === $id) return $d;
+    return null;
+}
+
+/** Simplified key for matching a service to the "diensten" tags of a case: "Logo's" ~ "logo" ~ "Logos". */
+function dienst_key(string $s): string { return rtrim(slugify($s), 's'); }
+
+/** Cases shown on a service page: the hand-picked ones, or else every visible case tagged with this service. */
+function dienst_cases(array $d): array {
+    $cases = visible_cases();
+    if ($d['cases']) {
+        $bySlug = array_column($cases, null, 'slug');
+        return array_values(array_filter(array_map(fn($s) => $bySlug[$s] ?? null, $d['cases'])));
+    }
+    $keys = [dienst_key($d['id']), dienst_key($d['titel'])];
+    return array_values(array_filter($cases, fn($c) => array_intersect($keys, array_map('dienst_key', $c['diensten']))));
+}
+
+function dienst_url(array $d): string { return 'dienst.php?d=' . rawurlencode($d['id']); }

@@ -76,14 +76,14 @@ page_start(($s['naam'] ?? 'Frisbee Agency'), $s['beschrijving'] ?? '', '?p=home'
         <p><?= h($h['diensten_tekst'] ?? '') ?></p>
       </div>
       <div class="bento">
-        <?php foreach ($c['diensten'] as $d):
+        <?php foreach (visible_diensten() as $d):
           $img = safe_img($d['afbeelding'] ?? '');
           $ill = preg_replace('/[^a-z]/', '', $d['illustratie'] ?? ''); ?>
         <article class="svc reveal" id="dienst-<?= h($d['id']) ?>">
           <div class="svc-img art"><?php
             if ($img) echo '<img src="' . h($img) . '" alt="" loading="lazy" class="svc-photo">';
             elseif ($ill && is_file(__DIR__ . "/inc/illustraties/$ill.svg")) readfile(__DIR__ . "/inc/illustraties/$ill.svg"); ?></div>
-          <div class="svc-body"><div class="row"><h3><?= h($d['titel']) ?></h3><span class="go" aria-hidden="true">→</span></div>
+          <div class="svc-body"><div class="row"><h3><a class="svc-link" href="<?= h(dienst_url($d)) ?>"><?= h($d['titel']) ?></a></h3><span class="go" aria-hidden="true">→</span></div>
           <p><?= h($d['tekst']) ?></p></div>
         </article>
         <?php endforeach; ?>

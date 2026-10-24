@@ -450,3 +450,88 @@ footer{padding-block:64px 40px}
 .adminbar ~ .nav{top:calc(env(safe-area-inset-top,0px) + 37px)}
 .draft-note{background:#FFE9A8;color:#5A4300;text-align:center;font-weight:600;font-size:.9rem;padding:10px 16px}
 .lb button[hidden]{display:none}
+
+/* ================= Service pages ================= */
+.svc-link{color:inherit;text-decoration:none}
+.svc-link::after{content:"";position:absolute;inset:0;z-index:3}
+.svc{cursor:pointer}
+.svc:focus-within{outline:3px solid var(--mint);outline-offset:3px}
+.dienst .stage .crumbs{color:var(--on-dark-muted)}
+.dienst .stage .crumbs a:hover{color:#fff}
+.dienst-title{font-size:clamp(2.6rem,6vw,5rem);font-weight:800;letter-spacing:-.035em;animation:fadeUp 1s var(--ease) both}
+.dienst-title .alive{color:var(--mint)}
+.dienst-intro{display:grid;gap:12px}
+.dienst-visual{position:relative;border-radius:28px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 40px 80px -30px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);
+  transform:perspective(1200px) rotateX(calc(var(--ty,0) * -4deg)) rotateY(calc(var(--tx,0) * 4deg));transition:transform .8s var(--ease);animation:discIn 1.2s .15s var(--ease) both}
+.dienst-visual:empty{display:none}
+.dienst-visual>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dienst-visual .svc-img{position:absolute;inset:0;height:100%}
+.slot.on-dark{border-color:rgba(255,255,255,.25);color:var(--on-dark-muted);background:none}
+
+.dsecs{display:grid;gap:clamp(40px,6vw,80px)}
+.dsec{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:center}
+.dsec.flip .dsec-img{order:-1}
+.dsec.no-img{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+.dsec h2{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;margin-bottom:16px}
+.dsec .txt{display:grid;gap:14px;color:var(--muted);font-size:1.08rem;max-width:60ch}
+.dsec-img{border-radius:var(--r);overflow:hidden;aspect-ratio:4/3;box-shadow:0 0 0 1px var(--line)}
+.dsec-img img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease)}
+.dsec:hover .dsec-img img{transform:scale(1.04)}
+
+.deliver{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.deliver-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;transition:transform .45s var(--ease),box-shadow .45s}
+.deliver-item:hover{transform:translateY(-4px);box-shadow:0 24px 40px -28px rgba(75,42,119,.5)}
+.deliver-item .tick{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--mint);color:var(--ink);font-weight:800}
+.deliver-item h3{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.deliver-item p{color:var(--muted);font-size:.95rem}
+
+.other-svcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.other-svc{position:relative;display:grid;gap:6px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px 56px 22px 22px;transition:transform .45s var(--ease),box-shadow .45s,border-color .3s}
+.other-svc b{font-family:var(--f-display);font-size:1.25rem;color:var(--plum)}
+.other-svc span{color:var(--muted);font-size:.95rem}
+.other-svc i{position:absolute;right:18px;top:22px;font-style:normal;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--paper);color:var(--plum);transition:transform .5s var(--ease),background .3s}
+.other-svc:hover{transform:translateY(-4px);box-shadow:0 24px 40px -28px rgba(75,42,119,.5);border-color:transparent}
+.other-svc:hover i{background:var(--mint);color:var(--ink);transform:rotate(-45deg)}
+
+/* ================= Contact form ================= */
+.contact-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:18px;align-items:stretch;text-align:left}
+.contact-grid .cta-card{justify-items:start;align-content:center;text-align:left}
+.contact-grid .cta-card h2{font-size:clamp(2rem,4vw,3.4rem)}
+.contact-grid .cta-actions{justify-content:flex-start}
+.cform{background:var(--card);border-radius:36px;padding:clamp(24px,4vw,44px);box-shadow:0 0 0 1px var(--line);display:grid;gap:22px;align-content:start}
+.cform-head h3{font-family:var(--f-display);font-size:1.5rem;font-weight:800}
+.cform-head p{color:var(--muted);margin-top:6px}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cf{display:grid;gap:6px;min-width:0}
+.cf.full{grid-column:1/-1}
+.cf label{font-weight:700;font-size:.9rem}
+.cf input:not([type=checkbox]),.cf select,.cf textarea{width:100%;font:inherit;font-size:1rem;color:var(--ink);background:var(--paper);border:1.5px solid transparent;border-radius:14px;padding:12px 14px;transition:border-color .2s,box-shadow .2s,background .2s}
+.cf textarea{resize:vertical;min-height:130px}
+.cf input:focus,.cf select:focus,.cf textarea:focus{outline:none;background:#fff;border-color:var(--plum-2);box-shadow:0 0 0 4px rgba(107,71,168,.14)}
+.cf.check label{display:flex;gap:12px;align-items:flex-start;font-weight:500;color:var(--muted);font-size:.9rem;cursor:pointer}
+.cf.check input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--plum)}
+.cf em{font-style:normal;font-size:.82rem;font-weight:600;color:#C2273D;min-height:0}
+.cf em:empty{display:none}
+.cf.bad input,.cf.bad textarea,.cf.bad select{border-color:#C2273D;background:#FFF5F6}
+.cf.captcha label{color:var(--plum)}
+.cf.captcha input{max-width:140px}
+.hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+.cform{position:relative}
+.cform-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.cform-msg{font-weight:600;color:var(--muted);margin:0;flex:1 1 220px}
+.cform-msg.err{color:#C2273D}
+.cform .btn[disabled]{opacity:.6;pointer-events:none}
+.cform.sent .cgrid,.cform.sent .cform-foot .btn{display:none}
+.cform.sent .cform-msg{color:#05543F;font-size:1.15rem;display:flex;gap:12px;align-items:center}
+.cform.sent .cform-msg::before{content:"✓";width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--mint);color:var(--ink);font-weight:800}
+
+@media (max-width:1000px){
+  .contact-grid{grid-template-columns:1fr}
+  .dsec,.dsec.no-img{grid-template-columns:1fr}
+  .dsec.flip .dsec-img{order:0}
+  .dienst-visual{max-width:560px;width:100%;order:-1}
+}
+@media (max-width:560px){
+  .cgrid{grid-template-columns:1fr}
+  .cform{border-radius:28px}
+}
