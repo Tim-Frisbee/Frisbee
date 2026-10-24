@@ -1,0 +1,15 @@
+<svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00CC99"/><stop offset=".55" stop-color="#3D8F9F"/><stop offset="1" stop-color="#6B47A8"/></linearGradient><clipPath id="c3"><circle cx="0" cy="0" r="1"/></clipPath></defs>
+<g class="fl"><rect x="70" y="52" width="84" height="150" rx="10" fill="#4B2A77" stroke="rgba(255,255,255,.1)"/><text x="80" y="180" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#fff" opacity=".85">PLUM</text><text x="80" y="193" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#fff">#4B2A77</text></g><g class="fl"><rect x="166" y="40" width="84" height="150" rx="10" fill="#00CC99" stroke="rgba(255,255,255,.1)"/><text x="176" y="168" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#160C24" opacity=".85">MINT</text><text x="176" y="181" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#160C24">#00CC99</text></g><g class="fl"><rect x="262" y="52" width="84" height="150" rx="10" fill="#6B47A8" stroke="rgba(255,255,255,.1)"/><text x="272" y="180" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#fff" opacity=".85">VIOLET</text><text x="272" y="193" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#fff">#6B47A8</text></g><g class="fl"><rect x="358" y="64" width="84" height="150" rx="10" fill="#F3EEFB" stroke="rgba(255,255,255,.1)"/><text x="368" y="192" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#160C24" opacity=".85">PAPER</text><text x="368" y="205" font-family="Sora, system-ui, sans-serif" font-size="9" fill="#160C24">#F3EEFB</text></g>
+<g class="fl2">
+<rect x="70" y="226" width="300" height="96" rx="12" fill="#24173A" stroke="rgba(255,255,255,.1)"/>
+<text x="88" y="296" font-family="Montserrat Alternates, sans-serif" font-weight="800" font-size="56" fill="#F3EEFB">Aa</text>
+<text x="176" y="262" font-family="Sora, system-ui, sans-serif" font-size="10" fill="#00CC99">DISPLAY</text>
+<text x="176" y="280" font-family="Sora, system-ui, sans-serif" font-size="10" fill="#B4A8C9">Montserrat Alternates</text>
+<text x="176" y="298" font-family="Sora, system-ui, sans-serif" font-size="10" fill="#B4A8C9">600 · 700 · 800</text>
+</g>
+<g transform="rotate(7 520 210)"><rect x="420" y="150" width="190" height="112" rx="10" fill="#F3EEFB"/>
+<rect x="438" y="176" width="70" height="6" rx="3" fill="#4B2A77"/><rect x="438" y="190" width="110" height="5" rx="2.5" fill="#C9BEDD"/><rect x="438" y="202" width="90" height="5" rx="2.5" fill="#C9BEDD"/><rect x="438" y="232" width="60" height="5" rx="2.5" fill="#00CC99"/></g>
+<g class="fl" transform="rotate(-9 500 160)"><rect x="410" y="96" width="190" height="112" rx="10" fill="url(#g3)"/>
+<circle cx="440" cy="126" r="14" fill="#160C24"/><circle cx="440" cy="126" r="6" fill="#00CC99"/>
+<text x="428" y="186" font-family="Montserrat Alternates, sans-serif" font-weight="800" font-size="22" fill="#fff" letter-spacing="2">FRISBEE</text></g>
+</svg>

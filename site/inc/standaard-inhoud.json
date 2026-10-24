@@ -1,0 +1,386 @@
+{
+  "site": {
+    "naam": "Frisbee Agency",
+    "beschrijving": "Frisbee Agency brengt jouw merk tot leven met doordachte websites, sterke branding, logo's en software.",
+    "email": "tim@frisbee.agency",
+    "contact_link": "",
+    "facebook": "https://www.facebook.com/frisbeedigitalagency",
+    "instagram": "https://www.instagram.com/frisbee.agency/",
+    "linkedin": "https://www.linkedin.com/company/103148212/",
+    "footer_tekst": "We brengen merken tot leven met websites, branding, logo's en software.",
+    "slogan": "Creatief in vorm, doelgericht in aanpak.",
+    "nav_knop": "Start je project"
+  },
+  "home": {
+    "hero_label": "Frisbee Digital Agency",
+    "hero_titel": "Waar jouw merk\n*tot leven*\nkomt.",
+    "hero_tekst": "Een sterk merk leeft. Het vertelt wie je bent, maakt verbinding en zet mensen in beweging. Wij brengen het tot leven met *doordachte websites, sterke branding en slimme digitale oplossingen.*",
+    "hero_knop1_tekst": "Plan een kennismaking",
+    "hero_knop1_link": "#contact",
+    "hero_knop2_tekst": "Bekijk ons werk",
+    "hero_knop2_link": "#realisaties",
+    "hero_chips": [
+      "#logo",
+      "#website",
+      "#branding",
+      "#software"
+    ],
+    "lichtkrant": [
+      {
+        "tekst": "Logo's",
+        "link": "#dienst-logos"
+      },
+      {
+        "tekst": "Websites",
+        "link": "#dienst-websites"
+      },
+      {
+        "tekst": "Branding",
+        "link": "#dienst-branding"
+      },
+      {
+        "tekst": "Software",
+        "link": "#dienst-software"
+      }
+    ],
+    "uitgelicht_case": "lineup",
+    "uitgelicht_kleur": "#05070a",
+    "uitgelicht_label": "Project in de kijker",
+    "uitgelicht_knop": "Lees het hele verhaal",
+    "diensten_label": "Jouw digitale gereedschapskist",
+    "diensten_titel": "Alles wat je merk nodig heeft, *onder één dak*.",
+    "diensten_tekst": "Creatief in vorm, doelgericht in aanpak, en altijd ontworpen om jouw onderneming vooruit te helpen.",
+    "realisaties_label": "Onze realisaties",
+    "realisaties_titel": "Realisaties waar we *écht* trots op zijn.",
+    "werkwijze_label": "Onze werkwijze",
+    "werkwijze_titel": "Van eerste idee tot sterk eindresultaat.",
+    "werkwijze_tekst": "Een helder traject, met ruimte voor overleg en bijsturing. Zo weet je op elk moment waar we staan en werken we stap voor stap naar een resultaat dat klopt.",
+    "stappen": [
+      {
+        "titel": "Kennismaking",
+        "tekst": "We leren jou, je onderneming en je doelen kennen en brengen alle noden helder in kaart."
+      },
+      {
+        "titel": "Eerste schets",
+        "tekst": "We zetten de eerste creatieve richting uit, zodat we snel voelen of we op dezelfde lijn zitten."
+      },
+      {
+        "titel": "Uitwerking",
+        "tekst": "De gekozen schets wordt verfijnd tot een sterk en doordacht ontwerp."
+      },
+      {
+        "titel": "Implementatie",
+        "tekst": "We zetten het ontwerp om in een concreet product en zorgen dat elk onderdeel perfect samenwerkt."
+      },
+      {
+        "titel": "Afwerking & oplevering",
+        "tekst": "Na jouw goedkeuring werken we alles tot in de puntjes af en leveren we het finale product op."
+      }
+    ],
+    "cta_label": "Contact",
+    "cta_titel": "Klaar om je merk te laten vliegen?",
+    "cta_tekst": "Vertel ons over je project. We plannen een vrijblijvende kennismaking en denken meteen met je mee.",
+    "cta_knop_tekst": "Contacteer ons"
+  },
+  "diensten": [
+    {
+      "id": "websites",
+      "titel": "Websites",
+      "tekst": "Gebruiksvriendelijke websites die visueel overtuigen én converteren.",
+      "illustratie": "websites",
+      "afbeelding": ""
+    },
+    {
+      "id": "logos",
+      "titel": "Logo's",
+      "tekst": "Tijdloze logo's die je merk herkenbaar en onderscheidend maken.",
+      "illustratie": "logos",
+      "afbeelding": ""
+    },
+    {
+      "id": "branding",
+      "titel": "Branding",
+      "tekst": "Sterke merken met een duidelijke identiteit en een consistente uitstraling.",
+      "illustratie": "branding",
+      "afbeelding": ""
+    },
+    {
+      "id": "software",
+      "titel": "Software",
+      "tekst": "Softwarekwaliteit zonder compromissen: getest, betrouwbaar en toekomstgericht.",
+      "illustratie": "software",
+      "afbeelding": ""
+    }
+  ],
+  "cases": [
+    {
+      "slug": "station-54",
+      "naam": "Station 54 SCA",
+      "zichtbaar": true,
+      "tegel": "groot",
+      "kleur": "#6e113f",
+      "tagline": "Snooker club & academy",
+      "intro": "",
+      "klant": "Station 54 SCA",
+      "diensten": [
+        "Logo"
+      ],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-stationlogo.jpg",
+      "hoofdbeeld": "",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [
+        "uploads/Station1.jpg",
+        "uploads/Station2.jpg",
+        "uploads/Station3.jpg",
+        "uploads/Station4.jpg",
+        "uploads/Station5.jpg",
+        "uploads/Station6.jpg"
+      ],
+      "kleuren": [
+        {
+          "hex": "#6e113e",
+          "naam": "Bordeaux"
+        },
+        {
+          "hex": "#ffc020",
+          "naam": "Goud"
+        },
+        {
+          "hex": "#ffffff",
+          "naam": "Wit"
+        }
+      ],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    },
+    {
+      "slug": "snooker-belgium",
+      "naam": "Snooker Belgium",
+      "zichtbaar": true,
+      "tegel": "normaal",
+      "kleur": "#000000",
+      "tagline": "",
+      "intro": "",
+      "klant": "Snooker Belgium",
+      "diensten": [
+        "Logo"
+      ],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-SBwitzwart.jpg",
+      "hoofdbeeld": "",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [
+        "uploads/SBwitzwart.jpg",
+        "uploads/SBzwart.jpg",
+        "uploads/SBwit.jpg",
+        "uploads/SBzwartzwart.jpg"
+      ],
+      "kleuren": [
+        {
+          "hex": "#000000",
+          "naam": "Zwart"
+        },
+        {
+          "hex": "#ffd010",
+          "naam": "Geel"
+        },
+        {
+          "hex": "#e00010",
+          "naam": "Rood"
+        },
+        {
+          "hex": "#009040",
+          "naam": "Groen"
+        }
+      ],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    },
+    {
+      "slug": "shooters",
+      "naam": "Shooters",
+      "zichtbaar": true,
+      "tegel": "normaal",
+      "kleur": "#2fac66",
+      "tagline": "Snookerclub Tremelo",
+      "intro": "",
+      "klant": "Shooters",
+      "diensten": [],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-Logo_Shooters.jpg",
+      "hoofdbeeld": "",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [
+        "uploads/proj-Logo_Shooters.jpg",
+        "uploads/Shooters-logo.jpg"
+      ],
+      "kleuren": [],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    },
+    {
+      "slug": "idefix",
+      "naam": "Idéfix",
+      "zichtbaar": true,
+      "tegel": "normaal",
+      "kleur": "#00bf56",
+      "tagline": "Kluswerken",
+      "intro": "",
+      "klant": "Idéfix",
+      "diensten": [],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-ide-fix_site.jpg",
+      "hoofdbeeld": "",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [],
+      "kleuren": [],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    },
+    {
+      "slug": "pixelperfect",
+      "naam": "PixelPerfect",
+      "zichtbaar": true,
+      "tegel": "normaal",
+      "kleur": "#ba0043",
+      "tagline": "",
+      "intro": "",
+      "klant": "PixelPerfect",
+      "diensten": [],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-pp_site-1.jpg",
+      "hoofdbeeld": "",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [],
+      "kleuren": [],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    },
+    {
+      "slug": "paraske-ball",
+      "naam": "Paraske Ball",
+      "zichtbaar": true,
+      "tegel": "breed",
+      "kleur": "#1a0054",
+      "tagline": "Snooker club · La Louvière",
+      "intro": "",
+      "klant": "Paraske Ball",
+      "diensten": [],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-paraske_site.jpg",
+      "hoofdbeeld": "",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [],
+      "kleuren": [],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    },
+    {
+      "slug": "hairstyle-retro",
+      "naam": "Hairstyle Retro",
+      "zichtbaar": true,
+      "tegel": "normaal",
+      "kleur": "#26160b",
+      "tagline": "Hairstyle",
+      "intro": "",
+      "klant": "Hairstyle Retro",
+      "diensten": [],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-retro_site.jpg",
+      "hoofdbeeld": "",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [],
+      "kleuren": [],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    },
+    {
+      "slug": "lineup",
+      "naam": "Line-Up",
+      "zichtbaar": true,
+      "tegel": "normaal",
+      "kleur": "#181a2f",
+      "tagline": "Live scoring. Every frame. Everywhere.",
+      "intro": "Line-Up brengt technologie en snooker samen in één krachtig ecosysteem. Registreer scores in realtime, bedien het scorebord rechtstreeks aan de tafel, publiceer live resultaten op het internet en voorzie je livestreams van professionele graphics.",
+      "klant": "Line-Up",
+      "diensten": [
+        "Software",
+        "Logo",
+        "Website"
+      ],
+      "jaar": "",
+      "website": "",
+      "logo": "uploads/proj-lineuplogo.jpg",
+      "hoofdbeeld": "uploads/lineupprojects.jpg",
+      "vraag": "",
+      "aanpak": "",
+      "resultaat": "",
+      "galerij": [
+        "uploads/lineupprojects.jpg",
+        "uploads/proj-lineuplogo.jpg"
+      ],
+      "kleuren": [
+        {
+          "hex": "#181a2f",
+          "naam": "Nachtblauw"
+        },
+        {
+          "hex": "#40e0b0",
+          "naam": "Live-groen"
+        },
+        {
+          "hex": "#ffffff",
+          "naam": "Wit"
+        }
+      ],
+      "lettertype_naam": "",
+      "lettertype_gewichten": "",
+      "citaat_tekst": "",
+      "citaat_naam": "",
+      "citaat_functie": ""
+    }
+  ]
+}

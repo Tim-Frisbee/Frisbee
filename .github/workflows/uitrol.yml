@@ -1,0 +1,78 @@
+# Zet de site automatisch live op frisbee.agency bij elke wijziging in site/ op de main-branch.
+# Teksten, cases en beelden die je in het beheerpaneel aanpast, blijven op de server en worden nooit overschreven.
+#
+# Nodig (Settings → Secrets and variables → Actions):
+#   Secrets:   FTP_SERVER, FTP_GEBRUIKER, FTP_WACHTWOORD
+#   Optioneel: INSTALLATIECODE  (alleen voor de eerste installatie, daarna verwijderen)
+#   Variable:  FTP_MAP  (standaard: httpdocs/)
+
+name: Uitrol naar frisbee.agency
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".github/workflows/uitrol.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: uitrol
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  uitrol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Controleer of de FTP-gegevens ingesteld zijn
+        id: check
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        run: |
+          if [ -z "$FTP_SERVER" ]; then
+            echo "::warning::Nog geen FTP-gegevens ingesteld. Zie INSTALLATIE.md, stap 'Automatische uitrol'. Er is niets geüpload."
+            echo "klaar=nee" >> "$GITHUB_OUTPUT"
+          else
+            echo "klaar=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Code ophalen
+        if: steps.check.outputs.klaar == 'ja'
+        uses: actions/checkout@v4
+
+      - name: PHP-bestanden controleren op fouten
+        if: steps.check.outputs.klaar == 'ja'
+        run: find site -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+
+      - name: Installatiecode klaarzetten (alleen bij eerste installatie)
+        if: steps.check.outputs.klaar == 'ja'
+        env:
+          CODE: ${{ secrets.INSTALLATIECODE }}
+        run: |
+          if [ -n "$CODE" ]; then
+            printf '<?php http_response_code(404); exit; ?>\n%s' "$CODE" > site/data/installatiecode.php
+            echo "Installatiecode meegestuurd. Verwijder het secret INSTALLATIECODE na de installatie."
+          fi
+
+      - name: Uploaden via FTPS
+        if: steps.check.outputs.klaar == 'ja'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_GEBRUIKER }}
+          password: ${{ secrets.FTP_WACHTWOORD }}
+          protocol: ftps
+          security: strict
+          local-dir: ./site/
+          server-dir: ${{ vars.FTP_MAP || 'httpdocs/' }}
+          state-name: .uitrol-status.json
+          # Nooit aanraken op de server: inhoud, wachtwoord, back-ups en geüploade beelden
+          exclude: |
+            **/.git*
+            **/.git*/**
+            data/content.php
+            data/config.php
+            data/pogingen.php
+            data/backups/inhoud-*.php

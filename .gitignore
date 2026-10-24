@@ -1,0 +1,10 @@
+# Content and secrets that live only on the server
+site/data/content.php
+site/data/config.php
+site/data/pogingen.php
+site/data/installatiecode.php
+site/data/backups/inhoud-*.php
+site/data/*.tmp-*
+INSTALLATIECODE.txt
+*.zip
+.DS_Store
