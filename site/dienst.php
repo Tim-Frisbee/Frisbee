@@ -16,8 +16,6 @@ $title = $d['pagina_titel'] ?: $d['titel'];
 $hero = safe_img($d['hoofdbeeld']) ?: safe_img($d['afbeelding']);
 $ill = preg_replace('/[^a-z]/', '', $d['illustratie']);
 $illFile = $ill ? __DIR__ . "/inc/illustraties/$ill.svg" : '';
-$gal = array_values(array_filter(array_map('safe_img', $d['galerij'])));
-$n = count($gal);
 $cases = dienst_cases($d);
 $others = array_values(array_filter(visible_diensten(), fn($x) => $x['id'] !== $d['id']));
 $siteName = content()['site']['naam'] ?? '';
@@ -76,21 +74,6 @@ page_start($d['titel'] . ' · ' . $siteName, $d['tekst'] ?: $d['titel'], '?p=die
   </div></section>
   <?php endif; ?>
 
-  <?php if ($n || $admin): ?>
-  <section class="case-section"><div class="wrap">
-    <div class="sec-head reveal"><span class="eyebrow">Beelden</span><h2>Zo ziet het eruit.</h2></div>
-    <?php if ($n): ?>
-    <div class="gallery" id="gallery">
-      <?php foreach ($gal as $i => $src):
-        $cls = ($i === 0 && $n > 2 ? ' big' : '') . ($i === 0 && $n === 2 ? ' wide' : '');
-        if ($i === $n - 1) { $cls .= $n === 1 ? ' ld3' : ($n > 2 ? ([1 => ' ld3', 2 => ' ld2'][($n - 3) % 3] ?? '') : ''); $cls .= ($n <= 2 || ($n - 1) % 2 === 1) ? ' lm2' : ''; } ?>
-      <button type="button" class="shot reveal<?= $cls ?>" data-src="<?= h($src) ?>" aria-label="Bekijk beeld <?= $i + 1 ?> van <?= $n ?>"><img src="<?= h($src) ?>" alt="" loading="lazy"></button>
-      <?php endforeach; ?>
-    </div>
-    <?php else: echo $hint('Galerij', 'Voeg beelden toe: voorbeelden, mockups of foto\'s.'); endif; ?>
-  </div></section>
-  <?php endif; ?>
-
   <?php if ($cases): ?>
   <section class="case-section" id="werk"><div class="wrap">
     <div class="sec-head reveal"><span class="eyebrow">Realisaties</span><h2><?= h($d['titel']) ?> die we eerder maakten.</h2></div>
@@ -115,12 +98,4 @@ page_start($d['titel'] . ' · ' . $siteName, $d['tekst'] ?: $d['titel'], '?p=die
 </main>
 
 <?php site_cta($d['id'], $d['cta_titel'], $d['cta_tekst']); ?>
-
-<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Beeld vergroot" aria-hidden="true">
-  <img id="lbImg" alt="">
-  <button type="button" class="x" id="lbClose" aria-label="Sluiten">✕</button>
-  <button type="button" class="prev" id="lbPrev" aria-label="Vorige">←</button>
-  <button type="button" class="nx" id="lbNext" aria-label="Volgende">→</button>
-  <span class="count" id="lbCount"></span>
-</div>
 <?php site_footer(); page_end();

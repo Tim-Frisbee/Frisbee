@@ -153,7 +153,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'hoofdbeeld' => read_image('hoofdbeeld', post_str($_POST['hoofdbeeld'] ?? '')),
                     'secties' => read_repeater('secties', ['titel' => ['text'], 'tekst' => ['area'], 'afbeelding' => ['image']]),
                     'leveren' => read_repeater('leveren', ['titel' => ['text'], 'tekst' => ['text']]),
-                    'galerij' => read_gallery(),
                     'cases' => array_values(array_intersect(array_map('strval', (array)($_POST['cases'] ?? [])), $caseSlugs)),
                     'cta_titel' => post_str($_POST['cta_titel'] ?? '', 160), 'cta_tekst' => post_str($_POST['cta_tekst'] ?? '', 400),
                 ]);
@@ -397,9 +396,9 @@ switch ($p) {
         $body = '<div class="toolbar"><a class="btn-main" href="?p=dienst">+ Nieuwe dienst</a><p class="help">De volgorde hier is de volgorde op de homepage. Elke dienst heeft een eigen pagina.</p></div><ul class="caselist">';
         foreach ($ds as $i => $x) {
             $thumb = safe_img($x['afbeelding']) ?: safe_img($x['hoofdbeeld']);
-            $filled = count(array_filter([$x['intro'], $x['secties'], $x['leveren'], $x['galerij']]));
+            $filled = count(array_filter([$x['intro'], $x['secties'], $x['leveren']]));
             $body .= '<li class="' . ($x['zichtbaar'] ? '' : 'hidden-case') . '"><span class="thumb" style="background:#160C24">' . ($thumb ? '<img src="../' . h($thumb) . '" alt="" style="object-fit:cover">' : '<b style="color:#00CC99;font-family:var(--f-display)">' . h(mb_substr($x['titel'], 0, 1)) . '</b>') . '</span>'
-                . '<a class="cname" href="?p=dienst&amp;id=' . h(rawurlencode($x['id'])) . '"><b>' . h($x['titel']) . '</b><span>' . ($x['zichtbaar'] ? 'Zichtbaar' : 'Verborgen') . ' · pagina ' . $filled . '/4 onderdelen ingevuld</span></a>'
+                . '<a class="cname" href="?p=dienst&amp;id=' . h(rawurlencode($x['id'])) . '"><b>' . h($x['titel']) . '</b><span>' . ($x['zichtbaar'] ? 'Zichtbaar' : 'Verborgen') . ' · pagina ' . $filled . '/3 onderdelen ingevuld</span></a>'
                 . '<div class="ctools">' . ($i > 0 ? list_action('diensten', 'id', $x['id'], 'omhoog', 'Omhoog', '↑') : '<span class="icon ghost"></span>') . ($i < count($ds) - 1 ? list_action('diensten', 'id', $x['id'], 'omlaag', 'Omlaag', '↓') : '<span class="icon ghost"></span>')
                 . list_action('diensten', 'id', $x['id'], 'zichtbaar', $x['zichtbaar'] ? 'Verbergen' : 'Zichtbaar maken', $x['zichtbaar'] ? '●' : '○')
                 . '<a class="icon" href="../' . h(dienst_url($x)) . '" target="_blank" title="Bekijk op de site" aria-label="Bekijk op de site">↗</a>'
@@ -436,7 +435,6 @@ switch ($p) {
                 'Vertel hier het verhaal van de dienst: je aanpak, wat je anders doet, voor wie het is, …')
             . '</section><section class="panel"><h2>Wat je krijgt</h2>'
             . f_repeater('leveren', 'Punten', $x['leveren'], ['titel' => ['text', 'Punt', 'Bv. "Ontwerp op maat"'], 'tekst' => ['text', 'Korte uitleg (optioneel)', '']], 'Punt toevoegen', 'Verschijnt als lijst met vinkjes.')
-            . '</section><section class="panel"><h2>Beelden</h2>' . f_gallery($x['galerij'])
             . '</section><section class="panel"><h2>Realisaties op deze pagina</h2><p class="help">Kies welke cases je hier toont. Kies je niets, dan verschijnen automatisch de cases met "' . h($x['titel'] ?: 'deze dienst') . '" bij hun diensten' . ($auto ? ' (nu: ' . h(implode(', ', $auto)) . ')' : ' (nu: geen)') . '.</p><div class="picks">' . $caseBoxes . '</div>'
             . '</section><section class="panel"><h2>Contactblok onderaan</h2><p class="help">Leeg = dezelfde tekst als op de homepage. In het formulier staat deze dienst al voorgeselecteerd.</p><div class="grid2">'
             . f_text('cta_titel', 'Titel', $x['cta_titel']) . f_text('cta_tekst', 'Tekst', $x['cta_tekst']) . '</div>'
