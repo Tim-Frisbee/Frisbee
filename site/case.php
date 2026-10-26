@@ -113,7 +113,7 @@ $kleuren = array_values(array_filter($case['kleuren'] ?? [], fn($k) => preg_matc
   <?php if ($next): $nc = safe_hex($next['kleur'] ?? ''); $nl = is_light($nc); ?>
   <section class="case-section"><div class="wrap">
     <a class="next reveal" href="case.php?c=<?= h(rawurlencode($next['slug'])) ?>" style="--c:<?= h($nc) ?>;<?= $nl ? '--on:#160C24;--on-soft:rgba(22,12,36,.7)' : '--on:#fff;--on-soft:rgba(255,255,255,.7)' ?>">
-      <div class="next-in"><div><small>Volgende case</small><h2><?= h($next['naam']) ?> <i aria-hidden="true">→</i></h2></div><?php if ($nlogo = safe_img($next['logo'] ?? '')): ?><img src="<?= h($nlogo) ?>" alt="" loading="lazy"><?php endif; ?></div>
+      <div class="next-in"><div><small>Volgende case</small><h2><?= h($next['naam']) ?> <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i></h2></div><?php if ($nlogo = safe_img($next['logo'] ?? '')): ?><img src="<?= h($nlogo) ?>" alt="" loading="lazy"><?php endif; ?></div>
     </a>
   </div></section>
   <?php endif; ?>
