@@ -136,14 +136,7 @@
       "vraag": "",
       "aanpak": "",
       "resultaat": "",
-      "galerij": [
-        "uploads/Station1.jpg",
-        "uploads/Station2.jpg",
-        "uploads/Station3.jpg",
-        "uploads/Station4.jpg",
-        "uploads/Station5.jpg",
-        "uploads/Station6.jpg"
-      ],
+      "galerij": [],
       "kleuren": [
         {
           "hex": "#6e113e",
@@ -162,7 +155,17 @@
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {
+        "logos": [
+          "uploads/Station1.jpg",
+          "uploads/Station2.jpg",
+          "uploads/Station3.jpg",
+          "uploads/Station4.jpg",
+          "uploads/Station5.jpg",
+          "uploads/Station6.jpg"
+        ]
+      }
     },
     {
       "slug": "snooker-belgium",
@@ -183,12 +186,7 @@
       "vraag": "",
       "aanpak": "",
       "resultaat": "",
-      "galerij": [
-        "uploads/SBwitzwart.jpg",
-        "uploads/SBzwart.jpg",
-        "uploads/SBwit.jpg",
-        "uploads/SBzwartzwart.jpg"
-      ],
+      "galerij": [],
       "kleuren": [
         {
           "hex": "#000000",
@@ -211,7 +209,15 @@
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {
+        "logos": [
+          "uploads/SBwitzwart.jpg",
+          "uploads/SBzwart.jpg",
+          "uploads/SBwit.jpg",
+          "uploads/SBzwartzwart.jpg"
+        ]
+      }
     },
     {
       "slug": "shooters",
@@ -222,7 +228,9 @@
       "tagline": "Snookerclub Tremelo",
       "intro": "",
       "klant": "Shooters",
-      "diensten": [],
+      "diensten": [
+        "Logo"
+      ],
       "jaar": "",
       "website": "",
       "logo": "uploads/proj-Logo_Shooters.jpg",
@@ -230,16 +238,19 @@
       "vraag": "",
       "aanpak": "",
       "resultaat": "",
-      "galerij": [
-        "uploads/proj-Logo_Shooters.jpg",
-        "uploads/Shooters-logo.jpg"
-      ],
+      "galerij": [],
       "kleuren": [],
       "lettertype_naam": "",
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {
+        "logos": [
+          "uploads/proj-Logo_Shooters.jpg",
+          "uploads/Shooters-logo.jpg"
+        ]
+      }
     },
     {
       "slug": "idefix",
@@ -264,7 +275,8 @@
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {}
     },
     {
       "slug": "pixelperfect",
@@ -289,7 +301,8 @@
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {}
     },
     {
       "slug": "paraske-ball",
@@ -314,7 +327,8 @@
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {}
     },
     {
       "slug": "hairstyle-retro",
@@ -339,7 +353,8 @@
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {}
     },
     {
       "slug": "lineup",
@@ -362,10 +377,7 @@
       "vraag": "",
       "aanpak": "",
       "resultaat": "",
-      "galerij": [
-        "uploads/lineupprojects.jpg",
-        "uploads/proj-lineuplogo.jpg"
-      ],
+      "galerij": [],
       "kleuren": [
         {
           "hex": "#181a2f",
@@ -384,7 +396,15 @@
       "lettertype_gewichten": "",
       "citaat_tekst": "",
       "citaat_naam": "",
-      "citaat_functie": ""
+      "citaat_functie": "",
+      "galerijen": {
+        "software": [
+          "uploads/lineupprojects.jpg"
+        ],
+        "logos": [
+          "uploads/proj-lineuplogo.jpg"
+        ]
+      }
     }
   ]
 }

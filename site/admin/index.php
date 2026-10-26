@@ -219,10 +219,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $slug = slugify(post_str($_POST['slug'] ?? '') ?: $naam);
                 $taken = array_column(array_filter($cases, fn($x) => $x['slug'] !== $orig), 'slug');
                 $base = $slug; $i = 2; while (in_array($slug, $taken, true)) $slug = $base . '-' . $i++;
-                $gal = [];
-                foreach ((array)($_POST['galerij'] ?? []) as $g) if ($g = safe_img(post_str($g))) $gal[] = $g;
-                foreach (files_list($_FILES['galerij_nieuw'] ?? null) as $f) if ($u = store_upload($f)) $gal[] = $u;
-                if ($add = safe_img(post_str($_POST['galerij_bestaand'] ?? ''))) $gal[] = $add;
+                $galerijen = [];
+                foreach (all_diensten() as $d) if ($imgs = read_gallery($d['id'])) $galerijen[$d['id']] = $imgs;
                 $new = normalize_case([
                     'slug' => $slug, 'naam' => $naam, 'zichtbaar' => !empty($_POST['zichtbaar']),
                     'tegel' => in_array($_POST['tegel'] ?? '', ['normaal', 'groot', 'breed'], true) ? $_POST['tegel'] : 'normaal',
@@ -235,7 +233,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'logo' => read_image('logo', post_str($_POST['logo'] ?? '')),
                     'hoofdbeeld' => read_image('hoofdbeeld', post_str($_POST['hoofdbeeld'] ?? '')),
                     'vraag' => post_str($_POST['vraag'] ?? ''), 'aanpak' => post_str($_POST['aanpak'] ?? ''), 'resultaat' => post_str($_POST['resultaat'] ?? ''),
-                    'galerij' => array_values(array_unique($gal)),
+                    'galerij' => read_gallery('overige'),
+                    'galerijen' => $galerijen,
                     'kleuren' => array_values(array_filter(read_repeater('kleuren', ['hex' => ['color'], 'naam' => ['text']]), fn($k) => $k['hex'] !== '')),
                     'lettertype_naam' => post_str($_POST['lettertype_naam'] ?? '', 80), 'lettertype_gewichten' => post_str($_POST['lettertype_gewichten'] ?? '', 120),
                     'citaat_tekst' => post_str($_POST['citaat_tekst'] ?? '', 600), 'citaat_naam' => post_str($_POST['citaat_naam'] ?? '', 120), 'citaat_functie' => post_str($_POST['citaat_functie'] ?? '', 120),
@@ -318,7 +317,7 @@ switch ($p) {
         $vis = count(array_filter($cases, fn($x) => $x['zichtbaar']));
         $todo = [];
         foreach ($cases as $x) {
-            $miss = array_keys(array_filter(['intro' => $x['intro'], 'vraag' => $x['vraag'], 'aanpak' => $x['aanpak'], 'resultaat' => $x['resultaat'], 'beelden' => $x['galerij']], fn($v) => empty($v)));
+            $miss = array_keys(array_filter(['intro' => $x['intro'], 'vraag' => $x['vraag'], 'aanpak' => $x['aanpak'], 'resultaat' => $x['resultaat'], 'beelden' => case_image_count($x)], fn($v) => empty($v)));
             if ($miss) $todo[] = [$x, $miss];
         }
         $cards = [
@@ -502,7 +501,7 @@ switch ($p) {
             $logo = safe_img($x['logo']);
             $btn = fn(string $act, string $label, string $cls = '', string $extra = '') => '<form method="post" action="?p=cases"' . $extra . '>' . csrf_field() . '<input type="hidden" name="slug" value="' . h($x['slug']) . '"><input type="hidden" name="actie" value="' . $act . '"><button type="submit" class="icon ' . $cls . '" title="' . h($label) . '" aria-label="' . h($label) . '">' . ['omhoog' => '↑', 'omlaag' => '↓', 'zichtbaar' => $x['zichtbaar'] ? '●' : '○', 'verwijder' => '✕'][$act] . '</button></form>';
             $body .= '<li class="' . ($x['zichtbaar'] ? '' : 'hidden-case') . '"><span class="thumb" style="background:' . h(safe_hex($x['kleur'])) . '">' . ($logo ? '<img src="../' . h($logo) . '" alt="">' : '') . '</span>'
-                . '<a class="cname" href="?p=case&amp;slug=' . h(rawurlencode($x['slug'])) . '"><b>' . h($x['naam']) . '</b><span>' . ($x['zichtbaar'] ? 'Zichtbaar' : 'Verborgen') . ' · tegel ' . h($x['tegel']) . ' · ' . count($x['galerij']) . ' beelden</span></a>'
+                . '<a class="cname" href="?p=case&amp;slug=' . h(rawurlencode($x['slug'])) . '"><b>' . h($x['naam']) . '</b><span>' . ($x['zichtbaar'] ? 'Zichtbaar' : 'Verborgen') . ' · tegel ' . h($x['tegel']) . ' · ' . ($ni = case_image_count($x)) . ($ni === 1 ? ' beeld' : ' beelden') . '</span></a>'
                 . '<div class="ctools">' . ($i > 0 ? $btn('omhoog', 'Omhoog') : '<span class="icon ghost"></span>') . ($i < count($cases) - 1 ? $btn('omlaag', 'Omlaag') : '<span class="icon ghost"></span>')
                 . $btn('zichtbaar', $x['zichtbaar'] ? 'Verbergen' : 'Zichtbaar maken')
                 . '<a class="icon" href="../case.php?c=' . h(rawurlencode($x['slug'])) . '" target="_blank" title="Bekijk op de site" aria-label="Bekijk op de site">↗</a>'
@@ -518,11 +517,11 @@ switch ($p) {
         $x = $x ?? normalize_case(['zichtbaar' => false, 'kleur' => '#4b2a77']);
         $title = $x['naam'] ?: 'Nieuwe case';
         $view = $x['slug'] ? '../case.php?c=' . rawurlencode($x['slug']) : '';
-        $galHtml = '<div class="gal-list" data-gallery>';
-        foreach ($x['galerij'] as $g) if ($g = safe_img($g)) $galHtml .= '<div class="gal-item"><img src="../' . h($g) . '" alt=""><input type="hidden" name="galerij[]" value="' . h($g) . '"><div class="rep-tools"><button type="button" class="icon" data-gmove="-1" aria-label="Naar links">←</button><button type="button" class="icon" data-gmove="1" aria-label="Naar rechts">→</button><button type="button" class="icon danger" data-gremove aria-label="Verwijderen uit galerij">✕</button></div></div>';
-        $galHtml .= '</div>';
-        $existing = '<option value="">— kies een bestaand beeld —</option>';
-        foreach (all_uploads() as $u) $existing .= '<option value="' . h($u) . '">' . h(basename($u)) . '</option>';
+        $galHtml = '';
+        foreach (all_diensten() as $d) $galHtml .= f_gallery($x['galerijen'][$d['id']] ?? [], $d['id'], $d['titel'], '');
+        $rest = $x['galerij'];
+        foreach ($x['galerijen'] as $gid => $list) if (!find_dienst((string)$gid)) $rest = array_merge($rest, $list);
+        if ($rest) $galHtml .= f_gallery($rest, 'overige', 'Overige beelden', 'Beelden die nog niet bij een dienst horen. Verplaats ze naar de juiste dienst: verwijder ze hier en kies ze daar bij "Of een bestaand beeld".');
         $body = form_open('?p=case' . ($x['slug'] ? '&slug=' . rawurlencode($x['slug']) : '')) . '<input type="hidden" name="orig_slug" value="' . h($x['slug']) . '">'
             . '<section class="panel"><h2>Basis</h2><div class="grid2">' . f_text('naam', 'Naam', $x['naam'], '', ['required' => 'required'])
             . f_text('slug', 'Adres (slug)', $x['slug'], 'Wordt case.php?c=<b>' . h($x['slug'] ?: 'naam-van-de-case') . '</b>. Leeg = automatisch uit de naam.') . '</div>'
@@ -533,12 +532,10 @@ switch ($p) {
             . '</section><section class="panel"><h2>Gegevens</h2><div class="grid2">'
             . f_text('klant', 'Klant', $x['klant']) . f_text('diensten', 'Diensten', implode(', ', $x['diensten']), 'Gescheiden door komma\'s, bv. Logo, Website.')
             . f_text('jaar', 'Jaar', $x['jaar']) . f_text('website', 'Website van de klant', $x['website'], 'Volledige link, bv. https://…') . '</div>'
-            . '</section><section class="panel"><h2>Beelden</h2><div class="grid2">'
+            . '</section><section class="panel"><h2>Logo en hoofdbeeld</h2><div class="grid2">'
             . f_image('logo', 'Logo / tegelbeeld', $x['logo'], 'Gebruikt voor de tegel op de homepage. Liefst vierkant met een effen achtergrond in de hoofdkleur.')
             . f_image('hoofdbeeld', 'Hoofdbeeld (optioneel)', $x['hoofdbeeld'], 'Grote foto of mockup bovenaan de case. Leeg = het logo wordt getoond.') . '</div>'
-            . '<div class="field"><span class="label">Galerij</span>' . $galHtml . '<small>Gebruik de pijltjes om de volgorde te wijzigen. Het eerste beeld wordt groot getoond.</small></div>'
-            . '<div class="grid2"><div class="field"><label for="gnew">Beelden toevoegen</label><input type="file" id="gnew" name="galerij_nieuw[]" multiple accept="image/jpeg,image/png,image/webp,image/gif"><small>Je kan meerdere beelden tegelijk kiezen (max. 8 MB per beeld).</small></div>'
-            . '<div class="field"><label for="gexist">Of voeg een bestaand beeld toe</label><select id="gexist" name="galerij_bestaand">' . $existing . '</select></div></div>'
+            . '</section><section class="panel"><h2>Beelden per dienst</h2><p class="help">Elke dienst heeft een eigen groep. Op de site verschijnt een groep alleen als er beelden in zitten. Het eerste beeld van een groep wordt groot getoond. Max. 8 MB per beeld.</p>' . $galHtml
             . '</section><section class="panel"><h2>Het verhaal</h2>'
             . f_area('vraag', 'De vraag', $x['vraag'], 'Wat had de klant nodig? Een lege regel maakt een nieuwe alinea.', 5)
             . f_area('aanpak', 'Onze aanpak', $x['aanpak'], 'Hoe zijn we te werk gegaan en waarom?', 5)

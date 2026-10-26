@@ -35,8 +35,7 @@ $meta = array_filter($meta, fn($m) => $m[1] !== '');
 
 $hero = safe_img($case['hoofdbeeld'] ?? '');
 $logo = safe_img($case['logo'] ?? '');
-$gal = array_values(array_filter(array_map('safe_img', $case['galerij'] ?? [])));
-$n = count($gal);
+$groups = case_galleries($case);
 $lastFit = function (int $n): string {
     $d = $n === 1 ? ' ld3' : ($n > 2 ? ([1 => ' ld3', 2 => ' ld2'][($n - 3) % 3] ?? '') : '');
     $m = ($n <= 2 || ($n - 1) % 2 === 1) ? ' lm2' : '';
@@ -72,17 +71,30 @@ $kleuren = array_values(array_filter($case['kleuren'] ?? [], fn($k) => preg_matc
   <section class="case-section"><div class="wrap"><div class="story"><?= $rows ?></div></div></section>
   <?php endif; ?>
 
-  <?php if ($n || $admin): ?>
-  <section class="case-section"><div class="wrap">
+  <?php if ($groups || $admin): ?>
+  <section class="case-section" id="beelden"><div class="wrap">
     <div class="sec-head reveal"><span class="eyebrow">Beelden</span><h2>Het werk in beeld.</h2></div>
-    <?php if ($n): ?>
-    <div class="gallery" id="gallery">
-      <?php foreach ($gal as $i => $src):
-        $cls = ($i === 0 && $n > 2 ? ' big' : '') . ($i === 0 && $n === 2 ? ' wide' : '') . ($i === $n - 1 ? $lastFit($n) : ''); ?>
-      <button type="button" class="shot reveal<?= $cls ?>" data-src="<?= h($src) ?>" aria-label="Bekijk beeld <?= $i + 1 ?> van <?= $n ?>"><img src="<?= h($src) ?>" alt="" loading="lazy"></button>
-      <?php endforeach; ?>
+    <?php if (count($groups) > 1): ?>
+    <nav class="gal-nav reveal" aria-label="Beelden per dienst">
+      <?php foreach ($groups as $g): ?><a href="#beelden-<?= h($g['id']) ?>"><?= h($g['titel']) ?> <span><?= count($g['beelden']) ?></span></a><?php endforeach; ?>
+    </nav>
+    <?php endif; ?>
+    <?php foreach ($groups as $g): $n = count($g['beelden']); $dienstPage = $g['id'] !== 'overige' ? find_dienst($g['id']) : null; ?>
+    <div class="gal-group" id="beelden-<?= h($g['id']) ?>">
+      <?php if (count($groups) > 1 || $dienstPage): ?>
+      <div class="gal-head reveal"><h3><?= h($g['titel']) ?></h3><span class="gal-count"><?= $n ?> <?= $n === 1 ? 'beeld' : 'beelden' ?></span>
+        <?php if ($dienstPage && $dienstPage['zichtbaar']): ?><a class="gal-more" href="<?= h(dienst_url($dienstPage)) ?>">Meer over <?= h(mb_strtolower($dienstPage['titel'])) ?> <span aria-hidden="true">→</span></a><?php endif; ?>
+      </div>
+      <?php endif; ?>
+      <div class="gallery">
+        <?php foreach ($g['beelden'] as $i => $src):
+          $cls = ($i === 0 && $n > 2 ? ' big' : '') . ($i === 0 && $n === 2 ? ' wide' : '') . ($i === $n - 1 ? $lastFit($n) : ''); ?>
+        <button type="button" class="shot reveal<?= $cls ?>" data-src="<?= h($src) ?>" aria-label="<?= h($g['titel']) ?>: bekijk beeld <?= $i + 1 ?> van <?= $n ?>"><img src="<?= h($src) ?>" alt="" loading="lazy"></button>
+        <?php endforeach; ?>
+      </div>
     </div>
-    <?php else: echo $hint('Galerij', 'Voeg in het beheer beelden toe: mockups, logovarianten, schermen of foto\'s van de oplevering.'); endif; ?>
+    <?php endforeach; ?>
+    <?php if (!$groups) echo $hint('Beelden', 'Voeg in het beheer beelden toe per dienst: logo, website, branding of software. Een dienst zonder beelden wordt niet getoond.'); ?>
   </div></section>
   <?php endif; ?>
 

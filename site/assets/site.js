@@ -103,13 +103,19 @@
   const shots = $$('.shot');
   if (lb && shots.length) {
     const img = $('#lbImg'), count = $('#lbCount');
-    const list = shots.map(s => s.dataset.src);
-    let at = 0, last = null;
+    let list = [], at = 0, last = null;
     const show = () => { img.src = list[at]; count.textContent = `${at + 1} / ${list.length}`; };
     const open = n => { at = n; last = document.activeElement; show(); lb.classList.add('open'); lb.removeAttribute('aria-hidden'); $('#lbClose').focus(); };
     const close = () => { lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); last && last.focus(); };
     const step = d => { at = (at + d + list.length) % list.length; show(); };
-    shots.forEach((s, i) => s.addEventListener('click', () => open(i)));
+    // browse within the same group (e.g. only the logo images)
+    shots.forEach(s => s.addEventListener('click', () => {
+      const group = [...(s.closest('.gallery') || document).querySelectorAll('.shot')];
+      list = group.map(x => x.dataset.src);
+      const multi = list.length > 1;
+      $('#lbPrev').hidden = !multi; $('#lbNext').hidden = !multi;
+      open(group.indexOf(s));
+    }));
     $('#lbClose').addEventListener('click', close);
     $('#lbPrev').addEventListener('click', () => step(-1));
     $('#lbNext').addEventListener('click', () => step(1));
@@ -120,6 +126,5 @@
       if (e.key === 'ArrowLeft') step(-1);
       if (e.key === 'ArrowRight') step(1);
     });
-    if (list.length < 2) { $('#lbPrev').hidden = true; $('#lbNext').hidden = true; }
   }
 })();

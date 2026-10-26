@@ -110,9 +110,51 @@ function save_content(array $c): void {
 
 const FR_CASE_DEFAULTS = ['slug' => '', 'naam' => '', 'zichtbaar' => false, 'tegel' => 'normaal', 'kleur' => '#160c24', 'tagline' => '', 'intro' => '',
     'klant' => '', 'diensten' => [], 'jaar' => '', 'website' => '', 'logo' => '', 'hoofdbeeld' => '', 'vraag' => '', 'aanpak' => '', 'resultaat' => '',
-    'galerij' => [], 'kleuren' => [], 'lettertype_naam' => '', 'lettertype_gewichten' => '', 'citaat_tekst' => '', 'citaat_naam' => '', 'citaat_functie' => ''];
+    'galerij' => [], 'galerijen' => [], 'kleuren' => [], 'lettertype_naam' => '', 'lettertype_gewichten' => '', 'citaat_tekst' => '', 'citaat_naam' => '', 'citaat_functie' => ''];
 
-function normalize_case(array $c): array { return array_replace(FR_CASE_DEFAULTS, array_intersect_key($c, FR_CASE_DEFAULTS)); }
+function normalize_case(array $c): array {
+    $isOld = !array_key_exists('galerijen', $c);
+    $c = array_replace(FR_CASE_DEFAULTS, array_intersect_key($c, FR_CASE_DEFAULTS));
+    $c['galerijen'] = is_array($c['galerijen']) ? array_filter(array_map(fn($l) => array_values((array)$l), $c['galerijen'])) : [];
+    // Cases saved before the split had one gallery. If such a case belongs to exactly
+    // one service, its images move to that service; otherwise they stay in "Overige beelden".
+    if ($isOld && $c['galerij']) {
+        $ids = case_dienst_ids($c);
+        if (count($ids) === 1) { $c['galerijen'] = [$ids[0] => $c['galerij']]; $c['galerij'] = []; }
+    }
+    return $c;
+}
+
+/** Service ids a case is tagged with (matching "Logo" to "Logo's" etc.). */
+function case_dienst_ids(array $c): array {
+    $ids = [];
+    foreach (content()['diensten'] as $d) {
+        $keys = [dienst_key($d['id'] ?? ''), dienst_key($d['titel'] ?? '')];
+        foreach ((array)$c['diensten'] as $tag) if (in_array(dienst_key((string)$tag), $keys, true)) { $ids[] = $d['id']; break; }
+    }
+    return array_values(array_unique($ids));
+}
+
+/**
+ * Image groups for a case page, in the order of the services.
+ * Only groups that have images are returned; images of unknown services and the
+ * old single gallery end up in "Overige beelden".
+ */
+function case_galleries(array $c): array {
+    $out = []; $rest = array_values(array_filter(array_map('safe_img', $c['galerij'])));
+    $known = [];
+    foreach (content()['diensten'] as $d) {
+        $known[$d['id']] = true;
+        $imgs = array_values(array_filter(array_map('safe_img', $c['galerijen'][$d['id']] ?? [])));
+        if ($imgs) $out[] = ['id' => $d['id'], 'titel' => $d['titel'], 'beelden' => $imgs];
+    }
+    foreach ($c['galerijen'] as $id => $list) if (!isset($known[$id])) $rest = array_merge($rest, array_values(array_filter(array_map('safe_img', $list))));
+    if ($rest) $out[] = ['id' => 'overige', 'titel' => $out ? 'Overige beelden' : 'Beelden', 'beelden' => array_values(array_unique($rest))];
+    return $out;
+}
+
+/** All images of a case, for counts. */
+function case_image_count(array $c): int { return array_sum(array_map(fn($g) => count($g['beelden']), case_galleries($c))); }
 
 function visible_cases(): array {
     return array_values(array_filter(array_map('normalize_case', content()['cases']), fn($c) => !empty($c['zichtbaar'])));
